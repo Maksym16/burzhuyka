@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: #F0E6D3;
+    background: #0B0907;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .orange-glow      { box-shadow: 0 4px 32px rgba(232,98,26,0.35); }
+  .orange-glow-sm   { box-shadow: 0 2px 16px rgba(232,98,26,0.25); }
+  .text-balance     { text-wrap: balance; }
+  .clip-reveal      { overflow: hidden; }
+}
