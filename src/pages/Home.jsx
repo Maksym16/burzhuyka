@@ -211,33 +211,6 @@ export default function Home() {
                 Монтаж та продаж печей, камінів і обладнання для саун. Установка під ключ по всій Україні від сертифікованих майстрів.
               </p>
 
-              {/* CTA buttons */}
-              <div className="flex flex-wrap gap-3 mb-10">
-                <a
-                  href="tel:+380670000000"
-                  className="hero-btn flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-6 py-3.5 text-sm uppercase tracking-[0.08em] transition-all hover:orange-glow"
-                >
-                  <PhoneIcon className="w-4 h-4" />
-                  Передзвонити
-                </a>
-                <a
-                  href="https://t.me/salamander_montazh"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hero-btn flex items-center gap-2 border border-[#2AABEE]/70 text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white font-semibold px-6 py-3.5 text-sm uppercase tracking-[0.08em] transition-all"
-                >
-                  <TgIcon className="w-4 h-4" />
-                  Telegram
-                </a>
-                <a
-                  href="viber://chat?number=%2B380670000000"
-                  className="hero-btn flex items-center gap-2 border border-[#7360F2]/70 text-[#7360F2] hover:bg-[#7360F2] hover:text-white font-semibold px-6 py-3.5 text-sm uppercase tracking-[0.08em] transition-all"
-                >
-                  <VbIcon className="w-4 h-4" />
-                  Viber
-                </a>
-              </div>
-
               {/* Stats strip */}
               <div className="flex items-stretch gap-0 border-t border-forge-border pt-8">
                 {STATS.slice(0, 3).map((s, i) => (
@@ -414,20 +387,6 @@ export default function Home() {
             >
               Весь каталог
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ STATS ═══════════ */}
-      <section className="stats-section py-16 border-y border-forge-border bg-forge-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y md:divide-y-0 divide-forge-border">
-            {STATS.map(s => (
-              <div key={s.label} className="stat-block py-8 px-6 text-center">
-                <div className="font-display text-5xl sm:text-6xl font-bold text-brand-primary leading-none mb-2">{s.num}</div>
-                <div className="text-forge-muted text-sm">{s.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

@@ -314,7 +314,7 @@ export default function Contacts() {
           </div>
 
           {/* Bottom messenger CTA strip */}
-          <div className="mt-6 bg-forge-black p-8 sm:p-10 text-center relative overflow-hidden">
+          {/* <div className="mt-6 bg-forge-black p-8 sm:p-10 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-brand-primary/40" />
             <p className="text-forge-muted text-xs uppercase tracking-widest mb-5">Або зв'яжіться через месенджер — відповідаємо цілодобово</p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -342,7 +342,7 @@ export default function Contacts() {
                 Передзвонити
               </a>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
