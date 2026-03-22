@@ -48,7 +48,7 @@ export default function Navbar() {
               <FlameIcon />
             </div>
             <span className="font-display text-xl font-bold tracking-[0.12em] text-forge-cream uppercase leading-none">
-              Саламандр
+              Ardor
             </span>
           </Link>
 
@@ -71,7 +71,7 @@ export default function Navbar() {
               </NavLink>
             ))}
             <a
-              href="tel:+380670000000"
+              href="tel:+380935428302"
               className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-5 py-2.5 uppercase tracking-[0.08em] transition-all hover:orange-glow"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -114,7 +114,7 @@ export default function Navbar() {
               </NavLink>
             ))}
             <a
-              href="tel:+380670000000"
+              href="tel:+380935428302"
               onClick={() => setOpen(false)}
               className="mt-2 text-center bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-5 py-3 uppercase tracking-widest transition-colors"
             >

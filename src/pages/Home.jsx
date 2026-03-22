@@ -51,7 +51,7 @@ function HeroCarousel() {
       {/* Badge */}
       <div className="absolute top-6 left-6 bg-brand-primary px-4 py-2 z-10">
         <p className="font-display text-white text-xs uppercase tracking-widest">Гарантія</p>
-        <p className="font-display text-white font-bold text-xl leading-none">3 роки</p>
+        <p className="font-display text-white font-bold text-xl leading-none">1 рік</p>
       </div>
 
       {/* Pagination dots */}
@@ -137,7 +137,7 @@ const CATALOG_CATS = [
 const STATS = [
   { num: '500+',  label: 'Виконаних проектів' },
   { num: '10',    label: 'Років на ринку'      },
-  { num: '3',     label: 'Роки гарантії'       },
+  { num: '1',     label: 'Роки гарантії на послуги та продукцію'       },
   { num: '24/7',  label: 'Підтримка клієнтів'  },
 ]
 
@@ -252,26 +252,26 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-8">
                 <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
                 <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                  Монтаж та продаж — Саламандр
+                  Монтаж та продаж — Ardor
                 </span>
               </div>
 
               {/* Display heading — each line wrapped for clip reveal */}
               <h1 className="font-display font-bold uppercase leading-none mb-8 text-5xl sm:text-6xl lg:text-[80px]">
                 <div className="clip-reveal">
-                  <span className="hero-line block text-forge-cream">Тепло</span>
+                  <span className="hero-line block text-forge-cream">ПРОДАЄМО</span>
                 </div>
                 <div className="clip-reveal">
-                  <span className="hero-line block text-brand-primary">у вашому</span>
+                  <span className="hero-line block text-brand-primary">МОНТУЄМО</span>
                 </div>
                 <div className="clip-reveal">
-                  <span className="hero-line block text-forge-cream">домі</span>
+                  <span className="hero-line block text-forge-cream">ГАРАНТУЄМО</span>
                 </div>
               </h1>
 
               {/* Subtitle */}
               <p className="hero-body text-forge-dim text-base sm:text-lg leading-relaxed max-w-md mb-8">
-                Монтаж та продаж печей, камінів і обладнання для саун. Установка під ключ по всій Україні від сертифікованих майстрів.
+                Монтаж та продаж печей, камінів і обладнання для бань та лазні. Установка під ключ Київ та область.
               </p>
 
               {/* Stats strip */}
@@ -366,7 +366,7 @@ export default function Home() {
             ))}
 
             {/* Service list items — continue in same grid */}
-            {SERVICE_LIST.map(s => (
+            {/* {SERVICE_LIST.map(s => (
               <div
                 key={s.title}
                 className="service-card bg-forge-card hover:bg-forge-surface p-6 flex items-start gap-4 group transition-colors duration-300"
@@ -379,7 +379,7 @@ export default function Home() {
                   <p className="text-forge-muted text-sm leading-relaxed">{s.desc}</p>
                 </div>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       </section>
@@ -418,7 +418,7 @@ export default function Home() {
                 <h3 className="font-display text-2xl font-bold uppercase text-forge-cream mb-2 group-hover:text-brand-primary transition-colors">
                   {c.label}
                 </h3>
-                <p className="text-forge-muted text-sm mb-5 leading-relaxed">{c.desc}</p>
+                {/* <p className="text-forge-muted text-sm mb-5 leading-relaxed">{c.desc}</p> */}
                 <div className="flex items-center justify-between">
                   <span className="text-brand-primary text-xs font-semibold uppercase tracking-widest">{c.count}</span>
                   <span className="text-forge-muted group-hover:text-brand-primary group-hover:translate-x-1 transition-all inline-block">→</span>
@@ -459,15 +459,15 @@ export default function Home() {
 
           {/* Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-14">
-            <a
+            {/* <a
               href="tel:+380670000000"
               className="flex items-center gap-2.5 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all hover:orange-glow"
             >
               <PhoneIcon className="w-4 h-4" />
               Передзвонити
-            </a>
+            </a> */}
             <a
-              href="https://t.me/salamander_montazh"
+              href="https://t.me/+380688429412"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 border border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
@@ -476,7 +476,7 @@ export default function Home() {
               Telegram
             </a>
             <a
-              href="viber://chat?number=%2B380670000000"
+              href="viber://chat?number=%2B380688429412"
               className="flex items-center gap-2.5 border border-[#7360F2] text-[#7360F2] hover:bg-[#7360F2] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
             >
               <VbIcon className="w-4 h-4" />
@@ -486,13 +486,24 @@ export default function Home() {
 
           {/* Large phone */}
           <div className="border-t border-forge-border pt-12">
-            <p className="text-forge-muted text-xs uppercase tracking-widest mb-3">Або дзвоніть напряму</p>
-            <a
-              href="tel:+380670000000"
-              className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-forge-cream hover:text-brand-primary transition-colors"
-            >
-              +38 (067) 000-00-00
-            </a>
+            <p className="text-forge-muted text-xs uppercase tracking-widest mb-8">Або дзвоніть напряму</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-10 sm:gap-16">
+              <div>
+                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Монтаж</p>
+                <a href="tel:+380935428302" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block">
+                  +38 093 542 83 02
+                </a>
+              </div>
+              <div>
+                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Продаж</p>
+                <a href="tel:+380688429412" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block mb-2">
+                  +38 068 842 94 12
+                </a>
+                <a href="tel:+380951420814" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block">
+                  +38 095 142 08 14
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>

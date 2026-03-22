@@ -7,16 +7,9 @@ import Footer from '../components/Footer'
 const SERVICES = [
   'Монтаж димоходів',
   'Встановлення камінів',
-  'Облаштування сауни / лазні',
+  'Монтаж бань/лазні',
   'Продаж обладнання',
-  'Технічне обслуговування',
   'Консультація',
-]
-
-const HOURS = [
-  ["Пн – Пт", '8:00 – 19:00'],
-  ['Субота',  '9:00 – 17:00'],
-  ['Неділя',  'Вихідний'],
 ]
 
 /* ─── SVG icons ─── */
@@ -49,6 +42,7 @@ export default function Contacts() {
   const [form,      setForm]      = useState({ name: '', phone: '', service: '', message: '' })
   const [errors,    setErrors]    = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [sending,   setSending]   = useState(false)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -66,13 +60,30 @@ export default function Contacts() {
     return e
   }
 
-  const handleSubmit = ev => {
+  const handleSubmit = async ev => {
     ev.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
     setErrors({})
-    setSubmitted(true)
-    setForm({ name: '', phone: '', service: '', message: '' })
+    setSending(true)
+    try {
+      await fetch('https://formsubmit.co/ajax/Ardor_montazh@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          Імя: form.name,
+          Телефон: form.phone,
+          Послуга: form.service,
+          Повідомлення: form.message,
+        }),
+      })
+      setSubmitted(true)
+      setForm({ name: '', phone: '', service: '', message: '' })
+    } catch {
+      alert('Помилка відправки. Спробуйте ще раз.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -120,21 +131,31 @@ export default function Contacts() {
               </h2>
 
               {/* Phone */}
-              <div className="mb-8">
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Телефон</p>
-                <a
-                  href="tel:+380670000000"
-                  className="font-display text-4xl sm:text-5xl font-bold text-forge-cream hover:text-brand-primary transition-colors block mb-5 leading-none"
-                >
-                  +38 (067)<br />000-00-00
-                </a>
-                <a
-                  href="tel:+380670000000"
-                  className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-6 py-3 text-sm uppercase tracking-widest transition-all hover:orange-glow-sm"
-                >
-                  <PhoneIcon className="w-4 h-4" />
-                  Передзвонити
-                </a>
+              <div className="mb-8 space-y-6">
+                <div>
+                  <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Монтаж</p>
+                  <a
+                    href="tel:+380935428302"
+                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none"
+                  >
+                    +38 093 542 83 02
+                  </a>
+                </div>
+                <div>
+                  <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Продаж</p>
+                  <a
+                    href="tel:+380688429412"
+                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none mb-2"
+                  >
+                    +38 068 842 94 12
+                  </a>
+                  <a
+                    href="tel:+380951420814"
+                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none"
+                  >
+                    +38 095 142 08 14
+                  </a>
+                </div>
               </div>
 
               <div className="h-px bg-forge-border mb-8" />
@@ -144,7 +165,7 @@ export default function Contacts() {
                 <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-4">Месенджери</p>
                 <div className="flex flex-col gap-3">
                   <a
-                    href="https://t.me/salamander_montazh"
+                    href="https://t.me/+380688429412"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-4 bg-[#2AABEE] hover:bg-[#1d96d9] text-white font-semibold px-6 py-4 transition-all"
@@ -157,7 +178,7 @@ export default function Contacts() {
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xl">→</span>
                   </a>
                   <a
-                    href="viber://chat?number=%2B380670000000"
+                    href="viber://chat?number=%2B380688429412"
                     className="group flex items-center gap-4 bg-[#7360F2] hover:bg-[#5e4ed4] text-white font-semibold px-6 py-4 transition-all"
                   >
                     <VbIcon className="w-6 h-6 flex-shrink-0" />
@@ -172,26 +193,13 @@ export default function Contacts() {
 
               <div className="h-px bg-forge-border mb-8" />
 
-              {/* Hours */}
-              <div>
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-4">Графік роботи</p>
-                <ul className="space-y-2">
-                  {HOURS.map(([day, hours]) => (
-                    <li key={day} className="flex justify-between text-sm py-1.5 border-b border-forge-border/50 last:border-0">
-                      <span className="text-forge-dim">{day}</span>
-                      <span className={hours === 'Вихідний' ? 'text-red-400 font-medium' : 'text-brand-primary font-semibold'}>
-                        {hours}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-5 flex items-start gap-2 text-forge-muted text-xs">
-                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  </svg>
-                  <span>м. Київ, вул. Промислова, 14 (за попереднім записом)</span>
-                </div>
+              {/* Address */}
+              <div className="flex items-start gap-2 text-forge-muted text-xs">
+                <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>м. Київ, Україна</span>
               </div>
             </div>
 
@@ -300,9 +308,10 @@ export default function Contacts() {
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-4 uppercase tracking-widest text-sm transition-all hover:orange-glow"
+                      disabled={sending}
+                      className="w-full bg-brand-primary hover:bg-brand-dark disabled:opacity-60 text-white font-semibold py-4 uppercase tracking-widest text-sm transition-all hover:orange-glow"
                     >
-                      Надіслати заявку
+                      {sending ? 'Надсилаємо...' : 'Надіслати заявку'}
                     </button>
                     <p className="text-gray-400 text-xs text-center mt-3">
                       Натискаючи кнопку, ви погоджуєтесь з обробкою персональних даних
