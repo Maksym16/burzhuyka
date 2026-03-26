@@ -13,13 +13,6 @@ const SERVICES = [
 ]
 
 /* ─── SVG icons ─── */
-function PhoneIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-    </svg>
-  )
-}
 
 function TgIcon({ className }) {
   return (
@@ -67,7 +60,7 @@ export default function Contacts() {
     setErrors({})
     setSending(true)
     try {
-      await fetch('https://formsubmit.co/ajax/Ardor_montazh@gmail.com', {
+      await fetch('https://formsubmit.co/ajax/burzhuyka_montazh@gmail.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -165,7 +158,7 @@ export default function Contacts() {
                 <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-4">Месенджери</p>
                 <div className="flex flex-col gap-3">
                   <a
-                    href="https://t.me/+380688429412"
+                    href="https://t.me/burzhuyka_montazh"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-4 bg-[#2AABEE] hover:bg-[#1d96d9] text-white font-semibold px-6 py-4 transition-all"

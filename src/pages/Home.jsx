@@ -48,12 +48,6 @@ function HeroCarousel() {
       <div className="absolute bottom-0 left-0 h-1 w-20 bg-brand-primary z-10" />
       <div className="absolute bottom-0 left-0 w-1 h-20 bg-brand-primary z-10" />
 
-      {/* Badge */}
-      <div className="absolute top-6 left-6 bg-brand-primary px-4 py-2 z-10">
-        <p className="font-display text-white text-xs uppercase tracking-widest">Гарантія</p>
-        <p className="font-display text-white font-bold text-xl leading-none">1 рік</p>
-      </div>
-
       {/* Pagination dots */}
       <div className="absolute bottom-4 right-4 flex gap-2 z-10">
         {HERO_IMAGES.map((_, i) => (
@@ -75,23 +69,23 @@ const SERVICES = [
   {
     id: '01',
     title: 'Монтаж димоходів',
-    desc: 'Встановлення одно- та двостінних димоходів з нержавіючої сталі, керамічних і цегляних систем.',
+    desc: 'Встановлення одностінних та утеплених (термо) димоходів під ключ.',
     img:  'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=900&h=700&fit=crop&q=80',
-    points: ['Сталеві модульні системи', 'Керамічні димоходи', 'Цегляна кладка', 'Гідроізоляція та утеплення', 'Гарантія 5 років'],
+    points: ['Встановлення одностінних та утеплених (термо) димоходів', 'Гільзовка димоходних каналів', 'Монтаж керамічних димоходів'],
   },
   {
     id: '02',
     title: 'Монтаж камінів',
-    desc: 'Каміни та вставки провідних євробрендів — Kratki, Schmid, Romotop. Дизайн під ваш інтер\'єр.',
+    desc: 'Каміни та вставки провідних євробрендів — Kratki, Schmid, Romotop. Монтаж під ключ.',
     img:  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&h=700&fit=crop&q=80',
-    points: ['Каміні вставки та топки', 'Відкриті та закриті каміни', 'Облицювання каменем і цеглою', 'Прихована проводка', 'Монтаж під ключ'],
+    points: ['Монтаж камінних топок', 'Монтаж термоізоляційних коробів', 'Термоізоляція стін в зоні каміна', 'Розвідка теплого повітря від каміна'],
   },
   {
     id: '03',
     title: 'Монтаж саун та бань',
-    desc: 'Фінська сауна, хамам, рус. лазня. Підбір обладнання Harvia, Helo, Tulikivi.',
+    desc: 'Комплексне облаштування парних — від каркасу та ізоляції до оздоблення і підключення обладнання.',
     img:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=900&h=700&fit=crop&q=80',
-    points: ['Фінська та інфрачервона сауна', 'Хамам і парова лазня', 'Монтаж печей і парогенераторів', 'Вагонка, утеплення, двері', 'Пуско-налагоджувальні роботи'],
+    points: ['Монтаж каркаса та тепло-пароізоляції', 'Обшивка вагонкою та монтаж полків', 'Встановлення та під\'єднання нагрівального обладнання', 'Монтаж вентиляції, освітлення та декоративних елементів'],
   },
 ]
 
@@ -228,7 +222,7 @@ export default function Home() {
         {/* Background image + overlays */}
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1920&h=1080&fit=crop&q=80"
+            src="/fire-flame.jpg"
             alt=""
             className="w-full h-full object-cover"
           />
@@ -252,7 +246,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-8">
                 <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
                 <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                  Монтаж та продаж — Ardor
+                  Монтаж та продаж — Буржуйка
                 </span>
               </div>
 
@@ -364,22 +358,6 @@ export default function Home() {
                 </div>
               </div>
             ))}
-
-            {/* Service list items — continue in same grid */}
-            {/* {SERVICE_LIST.map(s => (
-              <div
-                key={s.title}
-                className="service-card bg-forge-card hover:bg-forge-surface p-6 flex items-start gap-4 group transition-colors duration-300"
-              >
-                <span className="text-2xl flex-shrink-0 mt-0.5">{s.icon}</span>
-                <div>
-                  <h4 className="font-display text-lg font-bold uppercase text-forge-cream mb-1 group-hover:text-brand-primary transition-colors">
-                    {s.title}
-                  </h4>
-                  <p className="text-forge-muted text-sm leading-relaxed">{s.desc}</p>
-                </div>
-              </div>
-            ))} */}
           </div>
         </div>
       </section>

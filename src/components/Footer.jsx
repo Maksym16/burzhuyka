@@ -2,12 +2,15 @@ import { Link } from 'react-router-dom';
 
 function FlameIcon() {
   return (
-    <svg
-      viewBox="0 0 24 28"
-      className="w-4 h-5 fill-white"
+   
+     <svg
       xmlns="http://www.w3.org/2000/svg"
+      height="24px"
+      viewBox="0 -960 960 960"
+      width="24px"
+      fill="#ffffff"
     >
-      <path d="M12 1S5 9 5 15a7 7 0 0014 0C19 9 12 1 12 1zm0 18a3 3 0 01-3-3c0-2.5 3-7 3-7s3 4.5 3 7a3 3 0 01-3 3z" />
+      <path d="M424-282q13 11 27.5 15.5T480-262q29 0 52.5-18.5T560-334q5-47-29-69.5T480-462q-5 14-5 26t3 26q3 17 7 32t1 32q-5 18-22 37t-40 27ZM80-80v-800h800v800H80Zm400-160q50 0 85-35t35-85q0-24-10-40t-28-30q-38-27-63.5-56.5T458-546q-44 35-71 79.5T360-362q0 35 36 78.5t84 43.5Zm-320 80h80v-80h90q-23-29-36.5-61T280-362q0-46 10-86.5t36.5-78.5q26.5-38 73.5-75.5T520-680q-11 44 9.5 93.5T606-496q33 24 53.5 56.5T680-360q0 35-11 64.5T640-240h80v80h80v-640H160v640Zm320-80Z" />
     </svg>
   );
 }
@@ -24,7 +27,7 @@ export default function Footer() {
                 <FlameIcon />
               </div>
               <span className="font-display text-lg font-bold tracking-[0.12em] text-forge-cream uppercase">
-                Саламандр
+                Буржуйка
               </span>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs text-forge-muted">
@@ -33,7 +36,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-4 mt-6">
               <a
-                href="https://t.me/salamander_montazh"
+                href="https://t.me/burzhuyka_montazh"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 bg-forge-card border border-forge-border flex items-center justify-center hover:border-[#2AABEE] hover:text-[#2AABEE] text-forge-muted transition-all"
@@ -48,7 +51,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="viber://chat?number=%2B380670000000"
+                href="viber://chat?number=%2B380688429412"
                 className="w-9 h-9 bg-forge-card border border-forge-border flex items-center justify-center hover:border-[#7360F2] hover:text-[#7360F2] text-forge-muted transition-all"
                 aria-label="Viber"
               >
@@ -61,7 +64,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="tel:+380670000000"
+                href="tel:+380935428302"
                 className="w-9 h-9 bg-forge-card border border-forge-border flex items-center justify-center hover:border-brand-primary hover:text-brand-primary text-forge-muted transition-all"
                 aria-label="Телефон"
               >
@@ -140,20 +143,20 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://t.me/ardor_montazh"
+                  href="https://t.me/burzhuyka_montazh"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-brand-primary transition-colors"
                 >
-                  Telegram: @Ardor_montazh
+                  Telegram: @burzhuyka_montazh
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:Ardor_montazh@gmail.com"
+                  href="mailto:burzhuyka_montazh@gmail.com"
                   className="hover:text-brand-primary transition-colors"
                 >
-                  Ardor_montazh@gmail.com
+                  burzhuyka_montazh@gmail.com
                 </a>
               </li>
               <li className="text-forge-muted">м.Київ, Україна</li>
@@ -162,7 +165,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-forge-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-forge-muted/60">
-          <p>© 2026 Ардор. Усі права захищені.</p>
+          <p>© 2026 Буржуйка. Усі права захищені.</p>
           <p>
             Професійний монтаж та продаж печей, камінів і обладнання для бань та
             лазні
