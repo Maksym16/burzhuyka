@@ -2,6 +2,7 @@ const express = require('express')
 const { body, param, validationResult } = require('express-validator')
 const { sql } = require('../db')
 const requireAuth = require('../middleware/auth')
+const { categories, manufacturers, getEnrichedProducts } = require('../db/seedData')
 
 const router = express.Router()
 
@@ -10,8 +11,8 @@ router.get('/categories', async (_req, res) => {
   try {
     const cats = await sql`SELECT * FROM categories ORDER BY id`
     res.json(cats)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+  } catch (_err) {
+    res.json(categories)
   }
 })
 
@@ -20,8 +21,31 @@ router.get('/manufacturers', async (_req, res) => {
   try {
     const mfrs = await sql`SELECT * FROM manufacturers ORDER BY label`
     res.json(mfrs)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+  } catch (_err) {
+    res.json([...manufacturers].sort((a, b) => a.label.localeCompare(b.label)))
+  }
+})
+
+// GET /api/products/slug/:slug (must be before /:id)
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const rows = await sql`
+      SELECT
+        p.*,
+        c.label AS category_label,
+        m.label AS manufacturer_label,
+        m.country
+      FROM products p
+      LEFT JOIN categories    c ON c.id = p.category_id
+      LEFT JOIN manufacturers m ON m.id = p.manufacturer_id
+      WHERE p.slug = ${req.params.slug}
+    `
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' })
+    res.json(rows[0])
+  } catch (_err) {
+    const product = getEnrichedProducts().find(p => p.slug === req.params.slug)
+    if (!product) return res.status(404).json({ error: 'Not found' })
+    res.json(product)
   }
 })
 
@@ -40,8 +64,8 @@ router.get('/', async (_req, res) => {
       ORDER BY p.id
     `
     res.json(products)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+  } catch (_err) {
+    res.json(getEnrichedProducts())
   }
 })
 
@@ -68,11 +92,14 @@ router.post('/',
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
-    const { name, category_id, manufacturer_id, image, specs, is_on_sale } = req.body
+    const { name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug } = req.body
     try {
       const rows = await sql`
-        INSERT INTO products (name, category_id, manufacturer_id, image, specs, is_on_sale)
-        VALUES (${name}, ${category_id}, ${manufacturer_id || null}, ${image || null}, ${specs || []}, ${is_on_sale ?? false})
+        INSERT INTO products (name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug)
+        VALUES (
+          ${name}, ${category_id}, ${manufacturer_id || null}, ${image || null},
+          ${specs || []}, ${spec_columns || null}, ${is_on_sale ?? false}, ${description || null}, ${slug || null}
+        )
         RETURNING *
       `
       res.status(201).json(rows[0])
@@ -92,7 +119,7 @@ router.put('/:id',
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
-    const { name, category_id, manufacturer_id, image, specs, is_on_sale } = req.body
+    const { name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug } = req.body
     try {
       const rows = await sql`
         UPDATE products SET
@@ -101,7 +128,10 @@ router.put('/:id',
           manufacturer_id = ${manufacturer_id || null},
           image           = ${image || null},
           specs           = ${specs || []},
+          spec_columns    = ${spec_columns || null},
           is_on_sale      = ${is_on_sale ?? false},
+          description     = ${description || null},
+          slug            = ${slug || null},
           updated_at      = NOW()
         WHERE id = ${req.params.id}
         RETURNING *

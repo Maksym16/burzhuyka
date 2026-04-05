@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS products (
   manufacturer_id VARCHAR(50) REFERENCES manufacturers(id) ON DELETE SET NULL,
   image           VARCHAR(500),
   specs           TEXT[],
+  spec_columns    TEXT[],
+  description     TEXT,
+  slug            VARCHAR(255) UNIQUE,
   is_on_sale      BOOLEAN DEFAULT FALSE,
   created_at      TIMESTAMP DEFAULT NOW(),
   updated_at      TIMESTAMP DEFAULT NOW()

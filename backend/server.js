@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const cors    = require('cors')
+const path    = require('path')
 
 const authRoutes     = require('./routes/auth')
 const productsRoutes = require('./routes/products')
@@ -20,6 +21,14 @@ app.use('/api/products', productsRoutes)
 app.use('/api/upload',   uploadRoute)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
+
+// Serve built frontend
+app.use(express.static(path.join(__dirname, '../dist')))
+
+// SPA fallback — all non-API routes return index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`)

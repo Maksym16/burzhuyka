@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useQuery } from '@tanstack/react-query'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { fetchProducts } from '../api/products'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -123,9 +125,9 @@ const SERVICE_LIST = [
 ]
 
 const CATALOG_CATS = [
-  { label: 'Печі для саун',    desc: 'Harvia, Helo, Tulikivi та ін.', icon: '🔥', count: '12 моделей' },
-  { label: 'Опалювальні печі', desc: 'Bulerjan, Jøtul, Keddy та ін.',  icon: '🏠', count: '8 моделей'  },
-  { label: 'Каміни',           desc: 'Kratki, Schmid, Romotop та ін.', icon: '🪵', count: '10 моделей' },
+  { label: 'Печі для саун',    categoryId: 'sauna',     icon: '🔥' },
+  { label: 'Опалювальні печі', categoryId: 'heating',   icon: '🏠' },
+  { label: 'Каміни',           categoryId: 'fireplace', icon: '🪵' },
 ]
 
 const STATS = [
@@ -163,6 +165,13 @@ function VbIcon({ className }) {
 /* ─── Component ─── */
 export default function Home() {
   const rootRef = useRef(null)
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  })
+
+  const countByCategory = (id) => allProducts.filter(p => p.category_id === id).length
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -398,7 +407,7 @@ export default function Home() {
                 </h3>
                 {/* <p className="text-forge-muted text-sm mb-5 leading-relaxed">{c.desc}</p> */}
                 <div className="flex items-center justify-between">
-                  <span className="text-brand-primary text-xs font-semibold uppercase tracking-widest">{c.count}</span>
+                  <span className="text-brand-primary text-xs font-semibold uppercase tracking-widest">{countByCategory(c.categoryId)} моделей</span>
                   <span className="text-forge-muted group-hover:text-brand-primary group-hover:translate-x-1 transition-all inline-block">→</span>
                 </div>
               </Link>

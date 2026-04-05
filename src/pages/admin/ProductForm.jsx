@@ -28,12 +28,13 @@ export default function ProductForm() {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: '', category_id: 'sauna', manufacturer_id: '',
-      image: '', specs: [{ value: '' }], is_on_sale: false,
+      name: '', slug: '', description: '', category_id: 'sauna', manufacturer_id: '',
+      image: '', specs: [{ value: '' }], spec_columns: [], is_on_sale: false,
     },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'specs' })
+  const { fields: colFields, append: appendCol, remove: removeCol } = useFieldArray({ control, name: 'spec_columns' })
   const imageUrl  = watch('image')
   const isOnSale  = watch('is_on_sale')
 
@@ -57,14 +58,28 @@ export default function ProductForm() {
     if (product) {
       reset({
         name:            product.name,
+        slug:            product.slug || '',
+        description:     product.description || '',
         category_id:     product.category_id,
         manufacturer_id: product.manufacturer_id || '',
         image:           product.image || '',
         specs:           (product.specs || []).map(s => ({ value: s })),
+        spec_columns:    (product.spec_columns || []).map(c => ({ value: c })),
         is_on_sale:      product.is_on_sale ?? false,
       })
     }
   }, [product, reset])
+
+  function handleNameBlur(e) {
+    const currentSlug = watch('slug')
+    if (currentSlug) return
+    const generated = e.target.value
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\u0400-\u04FF-]/g, '')
+      .slice(0, 80)
+    if (generated) setValue('slug', generated)
+  }
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0]
@@ -86,6 +101,7 @@ export default function ProductForm() {
       const payload = {
         ...formData,
         specs: formData.specs.map(s => s.value).filter(Boolean),
+        spec_columns: formData.spec_columns.map(c => c.value).filter(Boolean),
         manufacturer_id: formData.manufacturer_id || null,
       }
       return isEdit ? updateProduct(id, payload) : createProduct(payload)
@@ -116,12 +132,35 @@ export default function ProductForm() {
           <label className={labelClass}>Назва *</label>
           <input
             {...register('name', { required: "Обов'язкове поле" })}
+            onBlur={handleNameBlur}
             className={inputClass}
             placeholder="Harvia Legend 150"
           />
           {errors.name && (
             <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>
           )}
+        </div>
+
+        {/* Slug */}
+        <div>
+          <label className={labelClass}>Slug (URL)</label>
+          <input
+            {...register('slug')}
+            className={inputClass}
+            placeholder="harvia-legend-150"
+          />
+          <p className="text-forge-muted/50 text-xs mt-1">Генерується автоматично з назви. Можна змінити вручну.</p>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className={labelClass}>Опис</label>
+          <textarea
+            {...register('description')}
+            rows={4}
+            className={`${inputClass} resize-none`}
+            placeholder="Короткий опис товару..."
+          />
         </div>
 
         {/* Category + Manufacturer */}
@@ -212,6 +251,38 @@ export default function ProductForm() {
           {uploadError && (
             <p className="text-red-400 text-xs mt-2">{uploadError}</p>
           )}
+        </div>
+
+        {/* Spec columns — for multi-model table */}
+        <div>
+          <label className={labelClass}>Колонки таблиці характеристик</label>
+          <p className="text-forge-muted/50 text-xs mb-2">Додайте назви моделей, якщо характеристики представлені таблицею (напр. ПКС-01, ПКС-02). Залиште порожнім для звичайного списку.</p>
+          <div className="space-y-2">
+            {colFields.map((field, i) => (
+              <div key={field.id} className="flex gap-2">
+                <input
+                  {...register(`spec_columns.${i}.value`)}
+                  className={`${inputClass} flex-1`}
+                  placeholder="ПКС-01 Ч"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeCol(i)}
+                  className="text-forge-muted hover:text-red-400 px-3 transition-colors text-xl leading-none flex-shrink-0"
+                  aria-label="Видалити"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => appendCol({ value: '' })}
+            className="mt-2 text-xs text-brand-primary hover:text-brand-light transition-colors"
+          >
+            + Додати колонку
+          </button>
         </div>
 
         {/* Specs — dynamic list */}

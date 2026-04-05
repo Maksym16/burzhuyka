@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger)
 /* ─── Product card ─── */
 function ProductCard({ product }) {
   return (
-    <div className="product-card group bg-white flex flex-col overflow-hidden border-l-4 border-transparent hover:border-brand-primary transition-all duration-300 shadow-sm hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1">
+    <Link to={`/catalog/${product.slug}`} className="product-card group bg-white flex flex-col overflow-hidden border-l-4 border-transparent hover:border-brand-primary transition-all duration-300 shadow-sm hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1">
       {/* Image */}
       <div className="relative h-52 overflow-hidden bg-gray-100 flex-shrink-0">
         <img
@@ -38,21 +38,18 @@ function ProductCard({ product }) {
           {(product.specs || []).map(spec => (
             <li key={spec} className="text-gray-600 text-xs flex items-start gap-2">
               <span className="text-brand-primary font-bold leading-none mt-0.5">—</span>
-              <span>{spec}</span>
+              <span>{spec.includes('|') ? spec.split('|')[0] : spec}</span>
             </li>
           ))}
         </ul>
 
         <div className="flex items-end justify-end pt-4 border-t border-gray-100 mt-auto">
-          <Link
-            to="/contacts"
-            className="bg-brand-primary hover:bg-brand-dark text-white font-semibold text-xs px-5 py-2.5 uppercase tracking-wider transition-all hover:shadow-md"
-          >
-            Замовити
-          </Link>
+          <span className="bg-brand-primary group-hover:bg-brand-dark text-white font-semibold text-xs px-5 py-2.5 uppercase tracking-wider transition-all group-hover:shadow-md">
+            Детальніше
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
