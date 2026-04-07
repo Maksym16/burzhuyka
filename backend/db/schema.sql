@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS products (
   category_id     VARCHAR(50) REFERENCES categories(id) ON DELETE SET NULL,
   manufacturer_id VARCHAR(50) REFERENCES manufacturers(id) ON DELETE SET NULL,
   image           VARCHAR(500),
+  images          TEXT[],
   specs           TEXT[],
   spec_columns    TEXT[],
   description     TEXT,

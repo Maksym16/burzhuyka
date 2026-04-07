@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
@@ -154,22 +155,62 @@ export default function ProductPage() {
           )}
 
           {product && (
-            <>
+            <ProductGalleryLayout product={product} />
+          )}
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  )
+}
+
+function ProductGalleryLayout({ product }) {
+  const allImages = [
+    ...(product.image ? [product.image] : []),
+    ...(product.images || []).filter(img => img !== product.image),
+  ]
+  const [activeImg, setActiveImg] = useState(allImages[0] ?? null)
+
+  return (
+    <>
               {/* Two-column layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-                {/* Image */}
-                <div className="bg-white border border-gray-100 shadow-sm overflow-hidden">
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover max-h-[500px]"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-80 bg-gray-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                {/* Gallery */}
+                <div className="flex flex-col gap-3">
+                  {/* Main image */}
+                  <div className="bg-white border border-gray-100 shadow-sm overflow-hidden aspect-square flex items-center justify-center">
+                    {activeImg ? (
+                      <img
+                        src={activeImg}
+                        alt={product.name}
+                        className="w-full h-full object-contain max-h-[500px]"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-80 bg-gray-100 w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Thumbnails */}
+                  {allImages.length > 1 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {allImages.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImg(img)}
+                          className={`w-20 h-20 border-2 overflow-hidden flex-shrink-0 transition-all ${
+                            activeImg === img
+                              ? 'border-brand-primary'
+                              : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -239,13 +280,6 @@ export default function ProductPage() {
                   ← Повернутись до каталогу
                 </Link>
               </div>
-            </>
-          )}
-
-        </div>
-      </section>
-
-      <Footer />
-    </div>
+    </>
   )
 }

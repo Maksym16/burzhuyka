@@ -92,13 +92,13 @@ router.post('/',
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
-    const { name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug } = req.body
+    const { name, category_id, manufacturer_id, image, images, specs, spec_columns, is_on_sale, description, slug } = req.body
     try {
       const rows = await sql`
-        INSERT INTO products (name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug)
+        INSERT INTO products (name, category_id, manufacturer_id, image, images, specs, spec_columns, is_on_sale, description, slug)
         VALUES (
           ${name}, ${category_id}, ${manufacturer_id || null}, ${image || null},
-          ${specs || []}, ${spec_columns || null}, ${is_on_sale ?? false}, ${description || null}, ${slug || null}
+          ${images || null}, ${specs || []}, ${spec_columns || null}, ${is_on_sale ?? false}, ${description || null}, ${slug || null}
         )
         RETURNING *
       `
@@ -119,7 +119,7 @@ router.put('/:id',
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
-    const { name, category_id, manufacturer_id, image, specs, spec_columns, is_on_sale, description, slug } = req.body
+    const { name, category_id, manufacturer_id, image, images, specs, spec_columns, is_on_sale, description, slug } = req.body
     try {
       const rows = await sql`
         UPDATE products SET
@@ -127,6 +127,7 @@ router.put('/:id',
           category_id     = ${category_id},
           manufacturer_id = ${manufacturer_id || null},
           image           = ${image || null},
+          images          = ${images || null},
           specs           = ${specs || []},
           spec_columns    = ${spec_columns || null},
           is_on_sale      = ${is_on_sale ?? false},

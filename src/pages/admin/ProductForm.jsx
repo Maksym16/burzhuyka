@@ -20,8 +20,9 @@ export default function ProductForm() {
   const queryClient = useQueryClient()
   const fileInputRef = useRef(null)
 
-  const [uploading, setUploading]   = useState(false)
+  const [uploading, setUploading]     = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [images, setImages]           = useState([])
 
   const {
     register, control, handleSubmit, reset, watch, setValue,
@@ -29,13 +30,12 @@ export default function ProductForm() {
   } = useForm({
     defaultValues: {
       name: '', slug: '', description: '', category_id: 'sauna', manufacturer_id: '',
-      image: '', specs: [{ value: '' }], spec_columns: [], is_on_sale: false,
+      specs: [{ value: '' }], spec_columns: [], is_on_sale: false,
     },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'specs' })
   const { fields: colFields, append: appendCol, remove: removeCol } = useFieldArray({ control, name: 'spec_columns' })
-  const imageUrl  = watch('image')
   const isOnSale  = watch('is_on_sale')
 
   const { data: categories = [] } = useQuery({
@@ -62,11 +62,16 @@ export default function ProductForm() {
         description:     product.description || '',
         category_id:     product.category_id,
         manufacturer_id: product.manufacturer_id || '',
-        image:           product.image || '',
         specs:           (product.specs || []).map(s => ({ value: s })),
         spec_columns:    (product.spec_columns || []).map(c => ({ value: c })),
         is_on_sale:      product.is_on_sale ?? false,
       })
+      // populate images from product
+      const existing = [
+        ...(product.image ? [product.image] : []),
+        ...(product.images || []).filter(img => img !== product.image),
+      ]
+      setImages(existing)
     }
   }, [product, reset])
 
@@ -82,24 +87,40 @@ export default function ProductForm() {
   }
 
   async function handleFileChange(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
     setUploadError('')
     setUploading(true)
     try {
-      const { url } = await uploadImage(file)
-      setValue('image', url, { shouldDirty: true })
+      const urls = await Promise.all(files.map(f => uploadImage(f).then(r => r.url)))
+      setImages(prev => [...prev, ...urls])
     } catch (err) {
       setUploadError(err.message || 'Upload failed')
     } finally {
       setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
+  }
+
+  function removeImage(idx) {
+    setImages(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  function moveImage(from, to) {
+    setImages(prev => {
+      const next = [...prev]
+      const [item] = next.splice(from, 1)
+      next.splice(to, 0, item)
+      return next
+    })
   }
 
   const mutation = useMutation({
     mutationFn: (formData) => {
       const payload = {
         ...formData,
+        image: images[0] || null,
+        images: images.length > 1 ? images.slice(1) : null,
         specs: formData.specs.map(s => s.value).filter(Boolean),
         spec_columns: formData.spec_columns.map(c => c.value).filter(Boolean),
         manufacturer_id: formData.manufacturer_id || null,
@@ -189,24 +210,32 @@ export default function ProductForm() {
 
         {/* Image upload */}
         <div>
-          <label className={labelClass}>Зображення</label>
+          <label className={labelClass}>Зображення <span className="normal-case text-forge-muted/50 font-normal">(перше — головне; можна перетягнути для сортування)</span></label>
 
-          {/* Preview */}
-          {imageUrl && (
-            <div className="mb-3 relative w-40 h-28">
-              <img
-                src={imageUrl}
-                alt="preview"
-                className="w-full h-full object-cover border border-forge-border"
-              />
-              <button
-                type="button"
-                onClick={() => { setValue('image', ''); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-forge-card border border-forge-border text-forge-muted hover:text-red-400 flex items-center justify-center text-xs transition-colors"
-                aria-label="Видалити зображення"
-              >
-                ×
-              </button>
+          {/* Thumbnails grid */}
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {images.map((url, i) => (
+                <div key={url} className="relative group w-24 h-24 flex-shrink-0">
+                  <img src={url} alt="" className={`w-full h-full object-cover border-2 ${i === 0 ? 'border-brand-primary' : 'border-forge-border'}`} />
+                  {i === 0 && (
+                    <span className="absolute bottom-0 left-0 right-0 bg-brand-primary/80 text-white text-[10px] text-center py-0.5">Головне</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-forge-card border border-forge-border text-forge-muted hover:text-red-400 flex items-center justify-center text-xs transition-colors opacity-0 group-hover:opacity-100"
+                  >×</button>
+                  <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100">
+                    {i > 0 && (
+                      <button type="button" onClick={() => moveImage(i, i - 1)} className="bg-forge-card border border-forge-border text-forge-muted hover:text-forge-cream text-[10px] px-1">◀</button>
+                    )}
+                    {i < images.length - 1 && (
+                      <button type="button" onClick={() => moveImage(i, i + 1)} className="bg-forge-card border border-forge-border text-forge-muted hover:text-forge-cream text-[10px] px-1">▶</button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -215,6 +244,7 @@ export default function ProductForm() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             onChange={handleFileChange}
             className="hidden"
             id="image-upload"
@@ -240,13 +270,10 @@ export default function ProductForm() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
                 </svg>
-                {imageUrl ? 'Замінити зображення' : 'Вибрати файл'}
+                {images.length > 0 ? 'Додати ще фото' : 'Вибрати фото'}
               </>
             )}
           </label>
-
-          {/* Hidden field to carry the URL */}
-          <input type="hidden" {...register('image')} />
 
           {uploadError && (
             <p className="text-red-400 text-xs mt-2">{uploadError}</p>
