@@ -10,10 +10,12 @@ const uploadRoute    = require('./routes/upload')
 const app  = express()
 const PORT = process.env.PORT || 3001
 
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-}))
+if (process.env.NODE_ENV !== 'production') {
+  app.use(cors({
+    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  }))
+}
 app.use(express.json())
 
 app.use('/api/auth',     authRoutes)
@@ -23,11 +25,11 @@ app.use('/api/upload',   uploadRoute)
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
 // Serve built frontend
-app.use(express.static(path.join(__dirname, '../dist')))
+app.use(express.static(path.join(__dirname, './dist')))
 
 // SPA fallback — all non-API routes return index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'))
+  res.sendFile(path.join(__dirname, './dist/index.html'))
 })
 
 app.listen(PORT, () => {
