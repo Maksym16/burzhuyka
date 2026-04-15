@@ -22,7 +22,7 @@ const uploadRoute    = require('./routes/upload')
 console.log('[startup] Routes loaded OK')
 
 const app  = express()
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3000
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(cors({
