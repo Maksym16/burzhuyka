@@ -87,7 +87,8 @@ export default function ProductPage() {
         <meta property="og:title" content={product ? `${product.name} — Буржуйка` : 'Буржуйка'} />
         <meta property="og:description" content={product?.description?.slice(0, 155) ?? ''} />
         {product?.image && <meta property="og:image" content={product.image} />}
-        <meta property="og:url" content={`https://burzhuyka.com.ua/catalog/${product?.slug ?? ''}`} />
+        <meta property="og:url" content={`https://burzhuyka.com/catalog/${product?.slug ?? ''}`} />
+        <link rel="canonical" href={`https://burzhuyka.com/catalog/${product?.slug ?? ''}`} />
         {product && (
           <script type="application/ld+json">{JSON.stringify({
             '@context': 'https://schema.org',

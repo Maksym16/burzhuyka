@@ -145,7 +145,8 @@ export default function Catalog() {
         <meta name="description" content="Каталог печей для сауни, опалювальних печей та камінів. Новаслав та інші виробники. Київ та область." />
         <meta property="og:title" content="Каталог печей та камінів — Буржуйка" />
         <meta property="og:description" content="Каталог печей для сауни, опалювальних печей та камінів. Новаслав та інші виробники. Київ та область." />
-        <meta property="og:url" content="https://burzhuyka.com.ua/catalog" />
+        <meta property="og:url" content="https://burzhuyka.com/catalog" />
+        <link rel="canonical" href="https://burzhuyka.com/catalog" />
       </Helmet>
 
       <Navbar />

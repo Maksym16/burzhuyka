@@ -61,20 +61,24 @@ export default function Contacts() {
     setErrors({})
     setSending(true)
     try {
-      await fetch('https://formsubmit.co/ajax/burzhuyka.montazh@gmail.com', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          Імя: form.name,
-          Телефон: form.phone,
-          Послуга: form.service,
-          Повідомлення: form.message,
+          name:    form.name,
+          phone:   form.phone,
+          service: form.service,
+          message: form.message,
         }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Помилка відправки')
+      }
       setSubmitted(true)
       setForm({ name: '', phone: '', service: '', message: '' })
-    } catch {
-      alert('Помилка відправки. Спробуйте ще раз.')
+    } catch (err) {
+      alert(err.message || 'Помилка відправки. Спробуйте ще раз.')
     } finally {
       setSending(false)
     }
@@ -87,7 +91,8 @@ export default function Contacts() {
         <meta name="description" content="Зв'яжіться з нами для консультації по монтажу та продажу печей і камінів. Київ та область." />
         <meta property="og:title" content="Контакти — Буржуйка" />
         <meta property="og:description" content="Зв'яжіться з нами для консультації по монтажу та продажу печей і камінів. Київ та область." />
-        <meta property="og:url" content="https://burzhuyka.com.ua/contacts" />
+        <meta property="og:url" content="https://burzhuyka.com/contacts" />
+        <link rel="canonical" href="https://burzhuyka.com/contacts" />
       </Helmet>
 
       <Navbar />

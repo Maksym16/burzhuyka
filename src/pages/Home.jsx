@@ -209,6 +209,7 @@ export default function Home() {
         <meta property="og:title" content="Буржуйка — Продаж та монтаж печей і камінів | Київ" />
         <meta property="og:description" content="Продаж та монтаж печей для сауни, опалювальних печей та камінів. Установка під ключ — Київ та область." />
         <meta property="og:url" content="https://burzhuyka.com" />
+        <link rel="canonical" href="https://burzhuyka.com" />
       </Helmet>
 
       <Navbar />

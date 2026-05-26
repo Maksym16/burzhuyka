@@ -22,6 +22,7 @@ const uploadRoute         = require('./routes/upload')
 const galleryRoutes       = require('./routes/gallery')
 const heroCarouselRoutes  = require('./routes/heroCarousel')
 const settingsRoutes      = require('./routes/settings')
+const contactRoute        = require('./routes/contact')
 console.log('[startup] Routes loaded OK')
 
 const app  = express()
@@ -41,6 +42,7 @@ app.use('/api/upload',         uploadRoute)
 app.use('/api/gallery',        galleryRoutes)
 app.use('/api/hero-carousel',  heroCarouselRoutes)
 app.use('/api/settings',       settingsRoutes)
+app.use('/api/contact',        contactRoute)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
