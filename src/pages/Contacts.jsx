@@ -339,14 +339,20 @@ export default function Contacts() {
                       </div>
                       <span className="text-gray-500 text-xs leading-relaxed select-none">
                         Я прочитав{' '}
-                        <button
-                          type="button"
-                          onClick={e => { e.preventDefault(); setPrivacyOpen(true) }}
+                        <Link
+                          to="/polityka-konfidencijnosti"
                           className="text-brand-primary underline hover:text-brand-dark transition-colors"
                         >
                           Політику конфіденційності
-                        </button>
-                        {' '}і згоден з умовами
+                        </Link>
+                        {' '}та{' '}
+                        <Link
+                          to="/umovy-nadannia-posluh"
+                          className="text-brand-primary underline hover:text-brand-dark transition-colors"
+                        >
+                          Умови надання послуг
+                        </Link>
+                        {' '}і погоджуюсь з ними
                       </span>
                     </label>
 

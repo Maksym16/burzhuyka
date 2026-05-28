@@ -81,6 +81,7 @@ export default function Footer() {
                 ['/catalog', 'Каталог товарів'],
                 ['/contacts', 'Контакти'],
                 ['/polityka-konfidencijnosti', 'Політика конфіденційності'],
+                ['/umovy-nadannia-posluh', 'Умови надання послуг'],
               ].map(([to, label]) => (
                 <li key={to}>
                   <Link
@@ -161,6 +162,12 @@ export default function Footer() {
               className="hover:text-brand-primary transition-colors ml-2"
             >
               Політика конфіденційності
+            </Link>
+            <Link
+              to="/umovy-nadannia-posluh"
+              className="hover:text-brand-primary transition-colors ml-2"
+            >
+              Умови надання послуг
             </Link>
             <Link to="/admin/login" className="text-forge-muted/40 hover:text-brand-primary transition-colors ml-2" aria-label="Адміністрування" title="Адмін">
               <svg xmlns="http://www.w3.org/2000/svg" className="inline w-3 h-3 -mt-0.5" viewBox="0 0 24 24" fill="currentColor">
