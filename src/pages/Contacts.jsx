@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { Helmet } from 'react-helmet-async'
+import PropTypes from 'prop-types'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -33,10 +34,14 @@ function VbIcon({ className }) {
 
 export default function Contacts() {
   const rootRef = useRef(null)
-  const [form,      setForm]      = useState({ name: '', phone: '', service: '', message: '' })
-  const [errors,    setErrors]    = useState({})
-  const [submitted, setSubmitted] = useState(false)
-  const [sending,   setSending]   = useState(false)
+  const [form,         setForm]         = useState({ name: '', phone: '', service: '', message: '' })
+  const [errors,       setErrors]       = useState({})
+  const [submitted,    setSubmitted]    = useState(false)
+  const [sending,      setSending]      = useState(false)
+  const [privacyOpen,  setPrivacyOpen]  = useState(false)
+  const [agreed,       setAgreed]       = useState(false)
+
+  const closePrivacy = useCallback(() => setPrivacyOpen(false), [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -77,6 +82,7 @@ export default function Contacts() {
       }
       setSubmitted(true)
       setForm({ name: '', phone: '', service: '', message: '' })
+      setAgreed(false)
     } catch (err) {
       alert(err.message || 'Помилка відправки. Спробуйте ще раз.')
     } finally {
@@ -91,6 +97,7 @@ export default function Contacts() {
         <meta name="description" content="Зв'яжіться з нами для консультації по монтажу та продажу печей і камінів. Київ та область." />
         <meta property="og:title" content="Контакти — Буржуйка" />
         <meta property="og:description" content="Зв'яжіться з нами для консультації по монтажу та продажу печей і камінів. Київ та область." />
+        <meta property="og:image" content="https://burzhuyka.com/burzuika_org_image.png" />
         <meta property="og:url" content="https://burzhuyka.com/contacts" />
         <link rel="canonical" href="https://burzhuyka.com/contacts" />
       </Helmet>
@@ -112,7 +119,7 @@ export default function Contacts() {
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
               <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                Зв'яжіться з нами
+                Зв&apos;яжіться з нами
               </span>
             </div>
             <h1 className="font-display text-5xl sm:text-6xl font-bold uppercase text-forge-cream leading-none">
@@ -232,7 +239,7 @@ export default function Contacts() {
                   </div>
                   <h3 className="font-display text-2xl font-bold uppercase text-gray-900">Заявку надіслано!</h3>
                   <p className="text-gray-500 text-sm max-w-xs">
-                    Дякуємо! Наш менеджер зв'яжеться з вами найближчим часом.
+                    Дякуємо! Наш менеджер зв&apos;яжеться з вами найближчим часом.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
@@ -247,7 +254,7 @@ export default function Contacts() {
                     {/* Name */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 uppercase tracking-[0.12em] mb-2">
-                        Ваше ім'я <span className="text-brand-primary">*</span>
+                        Ваше ім&apos;я <span className="text-brand-primary">*</span>
                       </label>
                       <input
                         type="text"
@@ -312,17 +319,44 @@ export default function Contacts() {
                     />
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-2 space-y-4">
+                    {/* Consent checkbox */}
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div className="relative flex-shrink-0 mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={agreed}
+                          onChange={e => setAgreed(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-4 h-4 border-2 border-gray-300 peer-checked:border-brand-primary peer-checked:bg-brand-primary transition-all flex items-center justify-center">
+                          {agreed && (
+                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-gray-500 text-xs leading-relaxed select-none">
+                        Я прочитав{' '}
+                        <button
+                          type="button"
+                          onClick={e => { e.preventDefault(); setPrivacyOpen(true) }}
+                          className="text-brand-primary underline hover:text-brand-dark transition-colors"
+                        >
+                          Політику конфіденційності
+                        </button>
+                        {' '}і згоден з умовами
+                      </span>
+                    </label>
+
                     <button
                       type="submit"
-                      disabled={sending}
-                      className="w-full bg-brand-primary hover:bg-brand-dark disabled:opacity-60 text-white font-semibold py-4 uppercase tracking-widest text-sm transition-all hover:orange-glow"
+                      disabled={sending || !agreed}
+                      className="w-full bg-brand-primary hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-4 uppercase tracking-widest text-sm transition-all hover:orange-glow"
                     >
                       {sending ? 'Надсилаємо...' : 'Надіслати заявку'}
                     </button>
-                    <p className="text-gray-400 text-xs text-center mt-3">
-                      Натискаючи кнопку, ви погоджуєтесь з обробкою персональних даних
-                    </p>
                   </div>
                 </form>
               )}
@@ -363,6 +397,180 @@ export default function Contacts() {
       </section>
 
       <Footer />
+
+      {/* Privacy Policy Modal */}
+      {privacyOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={closePrivacy}
+        >
+          <div
+            className="bg-white max-w-2xl w-full max-h-[88vh] flex flex-col relative"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Orange corner accent */}
+            <div className="absolute top-0 left-0 h-0.5 w-16 bg-brand-primary pointer-events-none" />
+            <div className="absolute top-0 left-0 w-0.5 h-16 bg-brand-primary pointer-events-none" />
+
+            {/* Sticky header */}
+            <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
+              <div>
+                <p className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.2em] mb-1">
+                  Правова інформація
+                </p>
+                <h3 className="font-display text-xl font-bold uppercase text-gray-900">
+                  Політика конфіденційності
+                </h3>
+              </div>
+              <button
+                onClick={closePrivacy}
+                className="text-gray-400 hover:text-gray-700 transition-colors text-2xl leading-none ml-4 flex-shrink-0"
+                aria-label="Закрити"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1 px-6 py-6 text-sm text-gray-600 font-sans leading-relaxed space-y-8">
+              <p className="text-gray-400 text-xs">Дата набрання чинності: 27 травня 2026 р.</p>
+
+              <ModalSection title="1. Загальні положення">
+                <p>
+                  Ця Політика конфіденційності описує, як компанія <strong className="text-gray-800">«Буржуйка»</strong> (м. Київ, Україна) збирає, використовує та захищає персональні дані, що надаються через веб-сайт <strong className="text-gray-800">burzhuyka.com</strong>.
+                </p>
+                <p className="mt-2">
+                  Обробка персональних даних здійснюється відповідно до Закону України «Про захист персональних даних» від 01.06.2010 № 2297-VI. Використовуючи Сайт та заповнюючи форму, ви даєте згоду на обробку даних на умовах, викладених нижче.
+                </p>
+              </ModalSection>
+
+              <ModalSection title="2. Які персональні дані ми збираємо">
+                <p className="mb-2">Ми збираємо лише дані, які ви самостійно вводите у форму зворотного зв&apos;язку:</p>
+                <ul className="space-y-1.5">
+                  <ModalItem>Ваше ім&apos;я — для персонального звернення під час зв&apos;язку.</ModalItem>
+                  <ModalItem>Номер телефону — для зворотного дзвінка або консультації.</ModalItem>
+                  <ModalItem>Тип послуги (необов&apos;язково) — для підготовки до розмови.</ModalItem>
+                  <ModalItem>Повідомлення (необов&apos;язково) — для кращого розуміння запиту.</ModalItem>
+                </ul>
+                <p className="mt-2">Ми <strong className="text-gray-800">не збираємо</strong> паспортні дані, банківські реквізити або медичну інформацію.</p>
+              </ModalSection>
+
+              <ModalSection title="3. Мета обробки даних">
+                <p className="mb-2">Надані дані використовуються виключно для:</p>
+                <ul className="space-y-1.5">
+                  <ModalItem>Зворотного зв&apos;язку — передзвонити або відповісти на запит.</ModalItem>
+                  <ModalItem>Консультацій щодо монтажу печей, камінів та обладнання для лазні.</ModalItem>
+                  <ModalItem>Оформлення замовлення на послуги або товари.</ModalItem>
+                </ul>
+                <p className="mt-2">Ваші дані <strong className="text-gray-800">не продаються</strong> та <strong className="text-gray-800">не передаються</strong> третім особам у комерційних цілях.</p>
+              </ModalSection>
+
+              <ModalSection title="4. Зберігання та захист даних">
+                <p>
+                  Персональні дані зберігаються на захищених серверах і доступні лише уповноваженим співробітникам Компанії. Ми застосовуємо шифрування з&apos;єднань (HTTPS) та обмежений доступ до систем обробки даних.
+                </p>
+                <p className="mt-2">
+                  Дані зберігаються не довше ніж <strong className="text-gray-800">3 роки</strong> з моменту останнього контакту, якщо інше не вимагається законодавством.
+                </p>
+              </ModalSection>
+
+              <ModalSection title="5. Файли cookie">
+                <p className="mb-2">Сайт використовує технічні та аналітичні cookie. Вони допомагають:</p>
+                <ul className="space-y-1.5">
+                  <ModalItem>Забезпечувати коректну роботу сайту (технічні cookie).</ModalItem>
+                  <ModalItem>Аналізувати відвідуваність для покращення сайту (аналітичні cookie).</ModalItem>
+                </ul>
+                <p className="mt-2">Ви можете вимкнути cookie у налаштуваннях браузера.</p>
+              </ModalSection>
+
+              <ModalSection title="6. Права суб'єкта персональних даних">
+                <p className="mb-2">Відповідно до законодавства України ви маєте право:</p>
+                <ul className="space-y-1.5">
+                  <ModalItem><strong className="text-gray-800">Доступ</strong> — дізнатись, які дані ми обробляємо.</ModalItem>
+                  <ModalItem><strong className="text-gray-800">Виправлення</strong> — вимагати уточнення неточних даних.</ModalItem>
+                  <ModalItem><strong className="text-gray-800">Видалення</strong> — вимагати видалення ваших даних.</ModalItem>
+                  <ModalItem><strong className="text-gray-800">Відкликання згоди</strong> — відкликати раніше надану згоду.</ModalItem>
+                  <ModalItem><strong className="text-gray-800">Оскарження</strong> — звернутись до Уповноваженого Верховної Ради з прав людини.</ModalItem>
+                </ul>
+              </ModalSection>
+
+              <ModalSection title="7. Контакти для запитів">
+                <p>Для запитів щодо персональних даних зв&apos;яжіться з нами будь-яким зручним способом:</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <a href="tel:+380935428302" className="text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                      +38 (093) 542-83-02
+                    </a>
+                  </div>
+                  <div>
+                    <div className="space-y-1">
+                      <a href="tel:+380688429412" className="block text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                        +38 (068) 842-94-12
+                      </a>
+                      <a href="tel:+380951420814" className="block text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                        +38 (095) 142-08-14
+                      </a>
+                    </div>
+                  </div>
+                  <div>
+                    <a href="mailto:burzhuyka.montazh@gmail.com" className="text-gray-800 hover:text-brand-primary transition-colors font-semibold underline">
+                      burzhuyka.montazh@gmail.com
+                    </a>
+                  </div>
+                </div>
+                <p className="mt-3 text-gray-400">Відповімо протягом 30 календарних днів.</p>
+              </ModalSection>
+
+              <ModalSection title="8. Зміни до Політики" last>
+                <p>
+                  Компанія може вносити зміни до цієї Політики. Актуальна версія завжди доступна на сторінці{' '}
+                  <Link to="/polityka-konfidencijnosti" onClick={closePrivacy} className="text-brand-primary hover:underline">
+                    burzhuyka.com/polityka-konfidencijnosti
+                  </Link>.
+                </p>
+              </ModalSection>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex-shrink-0 flex justify-end">
+              <button
+                onClick={closePrivacy}
+                className="bg-brand-primary hover:bg-brand-dark text-white text-sm font-semibold px-6 py-2.5 uppercase tracking-widest transition-colors"
+              >
+                Закрити
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function ModalSection({ title, children, last }) {
+  return (
+    <div className={last ? '' : 'pb-6 border-b border-gray-100'}>
+      <h4 className="font-display text-sm font-bold uppercase text-gray-900 tracking-wide mb-3">{title}</h4>
+      {children}
+    </div>
+  )
+}
+
+ModalSection.propTypes = {
+  title: PropTypes.node.isRequired,
+  children: PropTypes.node,
+  last: PropTypes.bool,
+}
+
+function ModalItem({ children }) {
+  return (
+    <li className="flex items-start gap-2 list-none">
+      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary flex-shrink-0 mt-1.5" />
+      <span>{children}</span>
+    </li>
+  )
+}
+
+ModalItem.propTypes = {
+  children: PropTypes.node,
 }

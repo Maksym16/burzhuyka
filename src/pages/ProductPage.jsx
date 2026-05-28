@@ -86,7 +86,7 @@ export default function ProductPage() {
         <meta name="description" content={product?.description?.slice(0, 155) ?? 'Деталі товару — Буржуйка'} />
         <meta property="og:title" content={product ? `${product.name} — Буржуйка` : 'Буржуйка'} />
         <meta property="og:description" content={product?.description?.slice(0, 155) ?? ''} />
-        {product?.image && <meta property="og:image" content={product.image} />}
+        <meta property="og:image" content="https://burzhuyka.com/burzuika_org_image.png" />
         <meta property="og:url" content={`https://burzhuyka.com/catalog/${product?.slug ?? ''}`} />
         <link rel="canonical" href={`https://burzhuyka.com/catalog/${product?.slug ?? ''}`} />
         {product && (
@@ -95,13 +95,14 @@ export default function ProductPage() {
             '@type': 'Product',
             name: product.name,
             description: product.description ?? undefined,
-            image: product.image ?? undefined,
+            url: `https://burzhuyka.com/catalog/${product.slug}`,
+            image: 'https://burzhuyka.com/burzuika_org_image.png',
             brand: { '@type': 'Brand', name: product.manufacturer_label ?? 'Новаслав' },
             offers: {
               '@type': 'Offer',
               availability: 'https://schema.org/InStock',
               priceCurrency: 'UAH',
-              seller: { '@type': 'Organization', name: 'Буржуйка' },
+              seller: { '@type': 'Organization', name: 'Буржуйка', url: 'https://burzhuyka.com' },
             },
           })}</script>
         )}

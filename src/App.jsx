@@ -8,6 +8,7 @@ import Catalog from './pages/Catalog'
 import ProductPage from './pages/ProductPage'
 import Gallery from './pages/Gallery'
 import Contacts from './pages/Contacts'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import AdminLogin from './pages/admin/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/catalog/:slug" element={<ProductPage />} />
             <Route path="/gallery"  element={<Gallery />} />
             <Route path="/contacts" element={<Contacts />} />
+            <Route path="/polityka-konfidencijnosti" element={<PrivacyPolicy />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/*" element={
               <ProtectedRoute>

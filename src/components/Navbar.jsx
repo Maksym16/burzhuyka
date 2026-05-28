@@ -79,25 +79,25 @@ export default function Navbar() {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
               </svg>
-              Передзвонити
+              +38 093 542 83 02
             </a>
           </nav>
 
-          {/* ── Hamburger ── */}
+          {/* ── Hamburger / Close ── */}
           <button
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5"
-            aria-label="Меню"
+            className="md:hidden flex items-center justify-center w-10 h-10 text-forge-cream"
+            aria-label={open ? 'Закрити меню' : 'Відкрити меню'}
           >
-            <span
-              className={`block w-6 h-[2px] bg-forge-cream transition-all duration-300 ${open ? 'rotate-45 translate-y-[7px]' : ''}`}
-            />
-            <span
-              className={`block w-6 h-[2px] bg-forge-cream transition-all duration-300 ${open ? 'opacity-0' : ''}`}
-            />
-            <span
-              className={`block w-6 h-[2px] bg-forge-cream transition-all duration-300 ${open ? '-rotate-45 -translate-y-[7px]' : ''}`}
-            />
+            {open ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            )}
           </button>
         </div>
 

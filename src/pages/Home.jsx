@@ -208,6 +208,7 @@ export default function Home() {
         <meta name="description" content="Продаж та монтаж печей для сауни, опалювальних печей та камінів. Виробник Новаслав та інші бренди. Установка під ключ — Київ та область." />
         <meta property="og:title" content="Буржуйка — Продаж та монтаж печей і камінів | Київ" />
         <meta property="og:description" content="Продаж та монтаж печей для сауни, опалювальних печей та камінів. Установка під ключ — Київ та область." />
+        <meta property="og:image" content="https://burzhuyka.com/burzuika_org_image.png" />
         <meta property="og:url" content="https://burzhuyka.com" />
         <link rel="canonical" href="https://burzhuyka.com" />
       </Helmet>

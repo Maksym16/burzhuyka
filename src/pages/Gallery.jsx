@@ -87,6 +87,11 @@ export default function Gallery() {
       <Helmet>
         <title>Галерея — Буржуйка</title>
         <meta name="description" content="Фотогалерея наших робіт: монтаж печей, камінів та обладнання для саун у Києві та області." />
+        <meta property="og:title" content="Галерея — Буржуйка" />
+        <meta property="og:description" content="Фотогалерея наших робіт: монтаж печей, камінів та обладнання для саун у Києві та області." />
+        <meta property="og:image" content="https://burzhuyka.com/burzuika_org_image.png" />
+        <meta property="og:url" content="https://burzhuyka.com/gallery" />
+        <link rel="canonical" href="https://burzhuyka.com/gallery" />
       </Helmet>
 
       <Navbar />
