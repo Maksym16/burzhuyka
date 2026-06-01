@@ -15,6 +15,8 @@ const distPath = path.join(__dirname, './dist')
 console.log('[startup] dist path:', distPath)
 console.log('[startup] dist exists:', fs.existsSync(distPath))
 
+const securityHeaders     = require('./middleware/securityHeaders')
+
 console.log('[startup] Loading routes...')
 const authRoutes          = require('./routes/auth')
 const productsRoutes      = require('./routes/products')
@@ -35,6 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
   }))
 }
 app.use(express.json())
+app.use(securityHeaders)
 
 app.use('/api/auth',           authRoutes)
 app.use('/api/products',       productsRoutes)
