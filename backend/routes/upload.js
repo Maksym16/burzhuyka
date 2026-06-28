@@ -19,6 +19,16 @@ const upload = multer({
   },
 })
 
+// Stricter limits for public, unauthenticated uploads (review photos)
+const uploadPublic = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true)
+    else cb(new Error('Only image files are allowed'))
+  },
+})
+
 const router = express.Router()
 
 // POST /api/upload (protected)
@@ -27,6 +37,20 @@ router.post('/', requireAuth, upload.single('image'), (req, res) => {
 
   const stream = cloudinary.uploader.upload_stream(
     { folder: 'burzhuyka', resource_type: 'image' },
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message })
+      res.json({ url: result.secure_url, public_id: result.public_id })
+    }
+  )
+  stream.end(req.file.buffer)
+})
+
+// POST /api/upload/review-image — public, used by the review submission form
+router.post('/review-image', uploadPublic.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file provided' })
+
+  const stream = cloudinary.uploader.upload_stream(
+    { folder: 'burzhuyka/reviews', resource_type: 'image' },
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message })
       res.json({ url: result.secure_url, public_id: result.public_id })

@@ -5,6 +5,7 @@ import ProductForm from './ProductForm'
 import GalleryAdmin from './GalleryAdmin'
 import HeroCarouselAdmin from './HeroCarouselAdmin'
 import Settings from './Settings'
+import ReviewsAdmin from './ReviewsAdmin'
 
 
 export default function Dashboard() {
@@ -68,6 +69,18 @@ export default function Dashboard() {
             Карусель головної
           </NavLink>
           <NavLink
+            to="/admin/reviews"
+            className={({ isActive }) =>
+              `block px-3 py-2.5 text-sm font-medium transition-colors rounded-sm ${
+                isActive
+                  ? 'text-brand-primary bg-brand-primary/10'
+                  : 'text-forge-dim hover:text-forge-cream hover:bg-forge-surface'
+              }`
+            }
+          >
+            Відгуки
+          </NavLink>
+          <NavLink
             to="/admin/settings"
             className={({ isActive }) =>
               `block px-3 py-2.5 text-sm font-medium transition-colors rounded-sm ${
@@ -101,6 +114,7 @@ export default function Dashboard() {
           <Route path="products/:id/edit" element={<ProductForm />} />
           <Route path="gallery"           element={<GalleryAdmin />} />
           <Route path="hero-carousel"     element={<HeroCarouselAdmin />} />
+          <Route path="reviews"           element={<ReviewsAdmin />} />
           <Route path="settings"          element={<Settings />} />
         </Routes>
       </main>

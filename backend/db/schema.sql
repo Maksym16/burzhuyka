@@ -57,6 +57,17 @@ CREATE TABLE IF NOT EXISTS hero_carousel (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+  id              SERIAL PRIMARY KEY,
+  name            VARCHAR(255) NOT NULL,
+  rating          INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment         TEXT NOT NULL,
+  image_url       TEXT,
+  image_public_id VARCHAR(500),
+  approved        BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at      TIMESTAMP DEFAULT NOW()
+);
+
 -- Seed manufacturers
 INSERT INTO manufacturers (id, label, country) VALUES
   ('harvia',    'Harvia',    'Фінляндія'),

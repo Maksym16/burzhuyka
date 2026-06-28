@@ -15,3 +15,16 @@ export async function uploadImage(file) {
   }
   return res.json() // { url }
 }
+
+export async function uploadReviewImage(file) {
+  const body = new FormData()
+  body.append('image', file)
+
+  const res = await fetch('/api/upload/review-image', { method: 'POST', body })
+
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}))
+    throw new Error(d.error || 'Upload failed')
+  }
+  return res.json() // { url, public_id }
+}

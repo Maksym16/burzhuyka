@@ -1,8 +1,9 @@
 require('dotenv').config()
-const express = require('express')
-const cors    = require('cors')
-const path    = require('path')
-const fs      = require('fs')
+const express     = require('express')
+const compression = require('compression')
+const cors        = require('cors')
+const path        = require('path')
+const fs          = require('fs')
 
 console.log('[startup] Node version:', process.version)
 console.log('[startup] NODE_ENV:', process.env.NODE_ENV)
@@ -25,10 +26,13 @@ const galleryRoutes       = require('./routes/gallery')
 const heroCarouselRoutes  = require('./routes/heroCarousel')
 const settingsRoutes      = require('./routes/settings')
 const contactRoute        = require('./routes/contact')
+const reviewsRoutes       = require('./routes/reviews')
 console.log('[startup] Routes loaded OK')
 
 const app  = express()
 const PORT = process.env.PORT || 3000
+
+app.use(compression())
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(cors({
@@ -46,6 +50,7 @@ app.use('/api/gallery',        galleryRoutes)
 app.use('/api/hero-carousel',  heroCarouselRoutes)
 app.use('/api/settings',       settingsRoutes)
 app.use('/api/contact',        contactRoute)
+app.use('/api/reviews',        reviewsRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

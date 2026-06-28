@@ -210,7 +210,7 @@ function ProductGalleryLayout({ product }) {
                               : 'border-gray-200 hover:border-gray-400'
                           }`}
                         >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <img src={img} alt="" loading="lazy" className="w-full h-full object-cover" />
                         </button>
                       ))}
                     </div>

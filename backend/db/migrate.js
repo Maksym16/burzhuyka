@@ -19,6 +19,22 @@ async function migrate() {
   `
   console.log('Migration: products.price column ready')
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id         SERIAL PRIMARY KEY,
+      name       VARCHAR(255) NOT NULL,
+      rating     INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      comment    TEXT NOT NULL,
+      approved   BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `
+  console.log('Migration: reviews table ready')
+
+  await sql`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS image_url TEXT`
+  await sql`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS image_public_id VARCHAR(500)`
+  console.log('Migration: reviews.image columns ready')
+
   process.exit(0)
 }
 
