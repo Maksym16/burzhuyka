@@ -79,6 +79,7 @@ export default function Footer() {
               {[
                 ['/', 'Головна'],
                 ['/catalog', 'Каталог товарів'],
+                ['/montazh-saun-ta-ban', 'Монтаж саун та бань'],
                 ['/contacts', 'Контакти'],
                 ['/polityka-konfidencijnosti', 'Політика конфіденційності'],
                 ['/umovy-nadannia-posluh', 'Умови надання послуг'],

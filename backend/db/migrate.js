@@ -35,6 +35,16 @@ async function migrate() {
   await sql`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS image_public_id VARCHAR(500)`
   console.log('Migration: reviews.image columns ready')
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS sauna_gallery (
+      id         SERIAL PRIMARY KEY,
+      url        TEXT NOT NULL,
+      public_id  VARCHAR(500) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `
+  console.log('Migration: sauna_gallery table ready')
+
   process.exit(0)
 }
 

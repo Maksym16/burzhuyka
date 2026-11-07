@@ -1,30 +1,37 @@
 import { useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import PropTypes from 'prop-types'
 import { fetchGallery, addGalleryImage, deleteGalleryImage } from '../../api/gallery'
 import { uploadImage } from '../../api/upload'
 
-export default function GalleryAdmin() {
+export default function GalleryAdmin({
+  title = 'Галерея',
+  queryKey = 'gallery',
+  fetchImages = fetchGallery,
+  addImage = addGalleryImage,
+  deleteImage = deleteGalleryImage,
+}) {
   const qc = useQueryClient()
   const inputRef = useRef(null)
 
   const { data: images = [], isLoading } = useQuery({
-    queryKey: ['gallery'],
-    queryFn: fetchGallery,
+    queryKey: [queryKey],
+    queryFn: fetchImages,
   })
 
   const uploadMutation = useMutation({
     mutationFn: async (files) => {
       for (const file of files) {
         const { url, public_id } = await uploadImage(file)
-        await addGalleryImage(url, public_id)
+        await addImage(url, public_id)
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['gallery'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [queryKey] }),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: deleteGalleryImage,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['gallery'] }),
+    mutationFn: deleteImage,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [queryKey] }),
   })
 
   function handleFiles(e) {
@@ -44,7 +51,7 @@ export default function GalleryAdmin() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-forge-cream text-xl font-bold uppercase tracking-wide">Галерея</h1>
+          <h1 className="text-forge-cream text-xl font-bold uppercase tracking-wide">{title}</h1>
           <p className="text-forge-muted text-sm mt-1">{images.length} фото</p>
         </div>
         <button
@@ -136,4 +143,12 @@ export default function GalleryAdmin() {
       )}
     </div>
   )
+}
+
+GalleryAdmin.propTypes = {
+  title: PropTypes.string,
+  queryKey: PropTypes.string,
+  fetchImages: PropTypes.func,
+  addImage: PropTypes.func,
+  deleteImage: PropTypes.func,
 }

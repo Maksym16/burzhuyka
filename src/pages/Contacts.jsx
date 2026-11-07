@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import { Helmet } from 'react-helmet-async'
 import PropTypes from 'prop-types'
@@ -34,6 +34,8 @@ function VbIcon({ className }) {
 
 export default function Contacts() {
   const rootRef = useRef(null)
+  const formRef = useRef(null)
+  const { hash } = useLocation()
   const [form,         setForm]         = useState({ name: '', phone: '', service: '', message: '' })
   const [errors,       setErrors]       = useState({})
   const [submitted,    setSubmitted]    = useState(false)
@@ -48,6 +50,12 @@ export default function Contacts() {
     }, rootRef)
     return () => ctx.revert()
   }, [])
+
+  useEffect(() => {
+    if (hash === '#consultation') {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [hash])
 
   const validate = () => {
     const e = {}
@@ -215,7 +223,7 @@ export default function Contacts() {
             </div>
 
             {/* RIGHT — consultation form */}
-            <div className="contact-right bg-white p-8 sm:p-10 relative">
+            <div id="consultation" ref={formRef} className="contact-right bg-white p-8 sm:p-10 relative scroll-mt-20">
               {/* Corner accent */}
               <div className="absolute top-0 right-0 h-0.5 w-24 bg-brand-primary" />
               <div className="absolute top-0 right-0 w-0.5 h-24 bg-brand-primary" />

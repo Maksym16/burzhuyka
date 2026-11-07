@@ -5,6 +5,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Головна' },
   { to: '/catalog', label: 'Каталог' },
   { to: '/gallery', label: 'Галерея' },
+  { to: '/montazh-saun-ta-ban', label: 'Сауни та бані' },
   { to: '/contacts', label: 'Контакти' },
 ];
 
@@ -55,14 +56,14 @@ export default function Navbar() {
           </Link>
 
           {/* ── Desktop nav ── */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-8">
             {NAV_LINKS.map(({ to, label }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={to === '/'}
                 className={({ isActive }) =>
-                  `font-sans font-medium text-sm uppercase tracking-[0.1em] transition-colors duration-200 ${
+                  `font-sans font-medium text-xs lg:text-sm uppercase tracking-[0.1em] whitespace-nowrap transition-colors duration-200 ${
                     isActive
                       ? 'text-brand-primary'
                       : 'text-forge-dim hover:text-forge-cream'
@@ -74,12 +75,13 @@ export default function Navbar() {
             ))}
             <a
               href="tel:+380935428302"
-              className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-5 py-2.5 uppercase tracking-[0.08em] transition-all hover:orange-glow"
+              aria-label="Передзвонити +38 093 542 83 02"
+              className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-3 lg:px-4 xl:px-5 py-2.5 uppercase tracking-[0.08em] whitespace-nowrap transition-all hover:orange-glow"
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
               </svg>
-              +38 093 542 83 02
+              <span className="hidden xl:inline">+38 093 542 83 02</span>
             </a>
           </nav>
 

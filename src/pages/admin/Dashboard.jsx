@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth'
 import ProductList from './ProductList'
 import ProductForm from './ProductForm'
 import GalleryAdmin from './GalleryAdmin'
+import SaunaGalleryAdmin from './SaunaGalleryAdmin'
 import HeroCarouselAdmin from './HeroCarouselAdmin'
 import Settings from './Settings'
 import ReviewsAdmin from './ReviewsAdmin'
@@ -55,6 +56,18 @@ export default function Dashboard() {
             }
           >
             Галерея
+          </NavLink>
+          <NavLink
+            to="/admin/sauna-gallery"
+            className={({ isActive }) =>
+              `block px-3 py-2.5 text-sm font-medium transition-colors rounded-sm ${
+                isActive
+                  ? 'text-brand-primary bg-brand-primary/10'
+                  : 'text-forge-dim hover:text-forge-cream hover:bg-forge-surface'
+              }`
+            }
+          >
+            Сауни — роботи
           </NavLink>
           <NavLink
             to="/admin/hero-carousel"
@@ -113,6 +126,7 @@ export default function Dashboard() {
           <Route path="products/new"      element={<ProductForm />} />
           <Route path="products/:id/edit" element={<ProductForm />} />
           <Route path="gallery"           element={<GalleryAdmin />} />
+          <Route path="sauna-gallery"     element={<SaunaGalleryAdmin />} />
           <Route path="hero-carousel"     element={<HeroCarouselAdmin />} />
           <Route path="reviews"           element={<ReviewsAdmin />} />
           <Route path="settings"          element={<Settings />} />

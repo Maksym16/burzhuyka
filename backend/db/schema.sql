@@ -48,6 +48,13 @@ CREATE TABLE IF NOT EXISTS gallery_images (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS sauna_gallery (
+  id         SERIAL PRIMARY KEY,
+  url        TEXT NOT NULL,
+  public_id  VARCHAR(500) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS hero_carousel (
   id         SERIAL PRIMARY KEY,
   url        TEXT NOT NULL,

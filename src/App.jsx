@@ -9,6 +9,7 @@ const Catalog        = lazy(() => import('./pages/Catalog'))
 const ProductPage    = lazy(() => import('./pages/ProductPage'))
 const Gallery        = lazy(() => import('./pages/Gallery'))
 const Contacts       = lazy(() => import('./pages/Contacts'))
+const MontazhSaunTaBan = lazy(() => import('./pages/MontazhSaunTaBan'))
 const PrivacyPolicy  = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const AdminLogin     = lazy(() => import('./pages/admin/Login'))
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/catalog/:slug" element={<ProductPage />} />
               <Route path="/gallery"  element={<Gallery />} />
               <Route path="/contacts" element={<Contacts />} />
+              <Route path="/montazh-saun-ta-ban" element={<MontazhSaunTaBan />} />
               <Route path="/polityka-konfidencijnosti" element={<PrivacyPolicy />} />
               <Route path="/umovy-nadannia-posluh" element={<TermsOfService />} />
               <Route path="/admin/login" element={<AdminLogin />} />
