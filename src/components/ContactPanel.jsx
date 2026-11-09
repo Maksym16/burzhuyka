@@ -36,7 +36,7 @@ export default function ContactPanel({ title, lead, showSales = true }) {
             <p className="mt-6 max-w-md text-lg leading-relaxed text-forge-dim">{lead}</p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link to="/contacts#consultation" className="btn-primary">Отримати консультацію</Link>
-              <a href="https://t.me/+380688429412" target="_blank" rel="noopener noreferrer" className="btn-on-dark">
+              <a href="https://t.me/burzhuyka_montazh" target="_blank" rel="noopener noreferrer" className="btn-on-dark">
                 <TgIcon className="w-4 h-4 text-[#2AABEE]" />
                 Telegram
               </a>

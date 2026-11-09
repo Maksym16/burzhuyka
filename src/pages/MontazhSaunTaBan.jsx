@@ -230,7 +230,7 @@ function SaunaHero() {
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link to="/contacts#consultation" className="btn-primary">Прорахувати сауну</Link>
-              <a href="https://t.me/+380688429412" target="_blank" rel="noopener noreferrer" aria-label="Надіслати фото приміщення в Telegram" className="btn-on-dark">
+              <a href="https://t.me/burzhuyka_montazh" target="_blank" rel="noopener noreferrer" aria-label="Надіслати фото приміщення в Telegram" className="btn-on-dark">
                 <TgIcon className="w-4 h-4 text-[#2AABEE]" />
                 Telegram
               </a>
