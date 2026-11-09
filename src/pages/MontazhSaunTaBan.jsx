@@ -1,48 +1,20 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react'
 import { Helmet } from 'react-helmet-async'
 import PropTypes from 'prop-types'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { SAUNA_PACKAGES } from '../data/saunaPricing'
+import ContactPanel from '../components/ContactPanel'
+import { TgIcon, VbIcon } from '../components/Icons'
+import { CountUp, EASE, Embers, Reveal, SpotlightCard, WordsReveal } from '../components/fx'
 import { fetchSaunaGallery } from '../api/saunaGallery'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const CANONICAL_URL = 'https://burzhuyka.com/montazh-saun-ta-ban'
 const OG_IMAGE_URL  = 'https://burzhuyka.com/burzuika_org_image.png'
 
-/* ─── SVG icons (same as Home / Contacts) ─── */
-function TgIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.83.941z"/>
-    </svg>
-  )
-}
-
-TgIcon.propTypes = { className: PropTypes.string }
-
-function VbIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11.4 0C5.5.2 1.6 3.8.8 9.1c-.4 3-.1 5.8 1.2 8.4.5 1 .8 2 .7 3.1-.1 1-.3 2-.5 3-.2.6 0 1.1.6.9 1.2-.4 2.4-.9 3.5-1.5.8-.4 1.6-.5 2.5-.3 2.1.5 4.2.6 6.3.2 5.1-1 8.6-4.7 8.9-9.9.2-2.9-.5-5.5-2.2-7.8C19.7 2 16.5.3 12.8.1c-.5 0-.9 0-1.4-.1z"/>
-    </svg>
-  )
-}
-
-VbIcon.propTypes = { className: PropTypes.string }
-
 /* ─── Data (word for word from the content brief) ─── */
-
-const STATS = [
-  { num: '500+', label: 'виконаних проектів' },
-  { num: '10+',  label: 'років на ринку' },
-  { num: '1+',   label: 'рік гарантії на монтаж і обладнання' },
-]
 
 // Hero temperature gauge — scale 0–110°C, matching the sauna's real
 // operating range quoted in the intro copy ("90–110 °C").
@@ -65,7 +37,7 @@ const SAUNA_TYPES = [
   {
     id: '03',
     title: 'Баня на дровах',
-    text: 'Класична російська баня або українська лазня з дров\'яною піччю, топкою з передбанника, баком для води та м\'якою парою. Монтуємо піч, утеплений димохід і захист стін у зоні печі.',
+    text: 'Класична баня з дров\'яною піччю, топкою з передбанника, баком для води та м\'якою парою. Монтуємо піч, утеплений димохід і захист стін у зоні печі.',
   },
   {
     id: '04',
@@ -74,11 +46,6 @@ const SAUNA_TYPES = [
   },
   {
     id: '05',
-    title: 'Інфрачервона кабіна та гімалайська сіль',
-    text: 'Як окремий варіант або доповнення до класичної парної: панелі з сіллю, ІЧ-випромінювачі в спинках полиць.',
-  },
-  {
-    id: '06',
     title: 'Сауни для бізнесу',
     text: 'Готелі, фітнес-клуби, бази відпочинку, SPA. Підбираємо обладнання для інтенсивної роботи та забезпечуємо дотримання вимог пожежної безпеки.',
   },
@@ -86,7 +53,7 @@ const SAUNA_TYPES = [
 
 const INSTALL_STEPS = [
   { id: '01', title: 'Заміри та проект', text: 'Виїзд на об\'єкт, оцінка стін, підлоги, електрики та можливості виведення димоходу. Ескіз парної з розташуванням печі, полиць і дверей.' },
-  { id: '02', title: 'Каркас', text: 'Монтаж каркасу зі струганого бруса камерної сушки, обробленого антисептиком і антипіреном.' },
+  { id: '02', title: 'Каркас', text: 'Монтаж каркасу зі струганого бруса камерної сушки.' },
   { id: '03', title: 'Утеплення та пароізоляція', text: 'Базальтова вата, фольгований пароізоляційний шар із проклеюванням швів, вентиляційний зазор під вагонкою.' },
   { id: '04', title: 'Обшивка стін і стелі', text: 'Вагонка або профіль STEP / SoftLine з липи, вільхи, фінської ялини, кедра чи термодеревини.' },
   { id: '05', title: 'Полиці та спинки', text: 'Дво- або трирівневі полиці, у тому числі «ширяючі» (підвісні) лави, підголівники, драбинки для підлоги.' },
@@ -152,13 +119,6 @@ const SERVICE_JSON_LD = {
     name: 'Київ та Київська область',
   },
   url: CANONICAL_URL,
-  offers: SAUNA_PACKAGES.map(p => ({
-    '@type': 'Offer',
-    name: `Сауна «${p.title}»`,
-    priceCurrency: 'UAH',
-    price: p.priceFrom,
-    url: CANONICAL_URL,
-  })),
 }
 
 const FAQ_JSON_LD = {
@@ -179,7 +139,7 @@ function FaqItem({ id, question, answer, isOpen, onToggle }) {
   const panelId  = `faq-panel-${id}`
   const buttonId = `faq-button-${id}`
   return (
-    <div className="border border-forge-border bg-forge-card">
+    <div className="border-t border-flue last:border-b">
       <h3 className="m-0">
         <button
           type="button"
@@ -187,26 +147,33 @@ function FaqItem({ id, question, answer, isOpen, onToggle }) {
           aria-expanded={isOpen}
           aria-controls={panelId}
           onClick={onToggle}
-          className="w-full flex items-center justify-between gap-4 text-left px-6 py-5 text-forge-cream font-display font-bold uppercase text-base sm:text-lg hover:text-brand-primary transition-colors"
+          className="w-full flex items-center justify-between gap-4 text-left py-5 text-lg font-normal leading-snug hover:text-brand-primary transition-colors"
         >
           <span>{question}</span>
           <span
             aria-hidden="true"
-            className={`flex-shrink-0 text-brand-primary text-2xl leading-none transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`}
+            className={`flex-shrink-0 text-2xl leading-none text-steel transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`}
           >
             +
           </span>
         </button>
       </h3>
-      <div
-        id={panelId}
-        role="region"
-        aria-labelledby={buttonId}
-        hidden={!isOpen}
-        className="px-6 pb-5"
-      >
-        <p className="text-forge-muted text-sm leading-relaxed">{answer}</p>
-      </div>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            id={panelId}
+            role="region"
+            aria-labelledby={buttonId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className="overflow-hidden"
+          >
+            <p className="pb-6 pr-8 leading-relaxed text-steel">{answer}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -219,11 +186,210 @@ FaqItem.propTypes = {
   onToggle: PropTypes.func.isRequired,
 }
 
+/* ─── Hero ─── */
+function SaunaHero() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '20%'])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
+
+  return (
+    <section ref={ref} className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-forge-black text-forge-cream">
+      <motion.img
+        src="/home_page_imgs/sauna_shelves.jpg"
+        alt="Парна з дров'яною піччю, полицями та підсвіткою"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ y: imageY }}
+        initial={{ scale: 1.16 }}
+        animate={{ scale: 1.02 }}
+        transition={{ duration: 2.4, ease: EASE }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-forge-black via-forge-black/45 to-forge-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-forge-black/65 via-forge-black/10 to-transparent" />
+      <Embers />
+
+      <motion.div className="page-wrap relative w-full pt-28 pb-10" style={{ opacity: contentOpacity }}>
+        <nav aria-label="Навігаційний ланцюжок" className="flex items-center gap-2 text-sm text-forge-cream/70 mb-8">
+          <Link to="/" className="hover:text-forge-cream transition-colors">Головна</Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-forge-cream" aria-current="page">Монтаж саун та бань</span>
+        </nav>
+
+        <WordsReveal
+          as="h1"
+          text="Монтаж саун та бань під ключ у Києві та області"
+          immediate
+          delay={0.4}
+          className="heading-display max-w-5xl"
+        />
+
+        <div className="mt-8 grid gap-10 lg:grid-cols-12 lg:items-end">
+          <Reveal delay={0.8} className="lg:col-span-6">
+            <p className="max-w-xl text-lg leading-relaxed text-forge-cream/85">
+              Облаштовуємо парні від каркасу до першого пару: утеплення, вагонка, полиці, піч, димохід, вентиляція та світло. Одна команда і одна гарантія.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link to="/contacts#consultation" className="btn-primary">Прорахувати сауну</Link>
+              <a href="https://t.me/+380688429412" target="_blank" rel="noopener noreferrer" aria-label="Надіслати фото приміщення в Telegram" className="btn-on-dark">
+                <TgIcon className="w-4 h-4 text-[#2AABEE]" />
+                Telegram
+              </a>
+              <a href="viber://chat?number=%2B380688429412" aria-label="Надіслати фото приміщення у Viber" className="btn-on-dark">
+                <VbIcon className="w-4 h-4 text-[#9D8FF7]" />
+                Viber
+              </a>
+            </div>
+          </Reveal>
+
+          {/* Temperature gauge */}
+          <Reveal delay={1} className="lg:col-span-5 lg:col-start-8">
+            <div className="flex items-end justify-between gap-4 mb-3">
+              <span className="text-sm text-forge-cream/70">Температура в парній</span>
+              <span className="font-display text-4xl font-medium leading-none tracking-[-0.02em]">90–<CountUp value="110" /> °C</span>
+            </div>
+            <div
+              role="img"
+              aria-label="Шкала температури парної від 0 до 110 градусів з робочою зоною 90–110 °C"
+              className="relative h-1.5 overflow-hidden rounded-full bg-white/20"
+            >
+              <motion.div
+                className="absolute inset-0 origin-left bg-gradient-to-r from-forge-muted via-brand-primary to-brand-light"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 1.8, ease: EASE, delay: 1.1 }}
+              />
+              {[...GAUGE_TICKS, GAUGE_HOT_ZONE.from].map(t => (
+                <div key={t} className="absolute top-0 bottom-0 w-px bg-forge-black" style={{ left: `${gaugePct(t)}%` }} />
+              ))}
+            </div>
+            <div className="relative h-4 mt-1.5 text-xs text-forge-cream/70">
+              {GAUGE_TICKS.map(t => (
+                <span key={t} className="absolute -translate-x-1/2" style={{ left: `${gaugePct(t)}%` }}>{t}°</span>
+              ))}
+              <span className="absolute right-0 text-forge-cream">110°+</span>
+            </div>
+          </Reveal>
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
+/* ─── Install steps: a readout heats up as the visitor works through them ─── */
+function InstallSteps() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 60%', 'end 60%'] })
+  const temperature = useTransform(scrollYProgress, v => `${Math.round(20 + 90 * v)}°`)
+  const color = useTransform(scrollYProgress, [0, 0.55, 1], ['#565F67', '#C94A10', '#FF7A1A'])
+  return (
+    <section className="page-section">
+      <div className="page-wrap grid gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <div className="lg:sticky lg:top-24">
+            <WordsReveal text="Що входить у монтаж під ключ" className="heading-xl max-w-md" />
+            <div aria-hidden="true" className="mt-8 hidden lg:block">
+              <motion.p style={{ color }} className="m-0 font-display text-[9.5rem] font-medium leading-none tracking-[-0.05em]">
+                <motion.span>{temperature}</motion.span>
+              </motion.p>
+              <p className="mt-3 max-w-xs text-steel">Так парна набирає температуру, коли все зібрано правильно.</p>
+              <div className="mt-5 h-1.5 max-w-sm overflow-hidden rounded-full bg-flue/60">
+                <motion.div style={{ scaleX: scrollYProgress, backgroundColor: color }} className="h-full origin-left" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol ref={ref} className="lg:col-span-7">
+          {INSTALL_STEPS.map(step => (
+            <Reveal as="li" key={step.id} className="grid grid-cols-[3.25rem_1fr] border-t border-flue py-6">
+              <span className="font-display text-2xl font-medium text-brand-dark">{Number(step.id)}</span>
+              <div>
+                <h3 className="font-display text-xl sm:text-2xl font-medium leading-snug tracking-[-0.015em]">{step.title}</h3>
+                <p className="mt-2 leading-relaxed text-steel">{step.text}</p>
+              </div>
+            </Reveal>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
+/* ─── Wood table with a live colour sample ─── */
+const WOOD_TONES = {
+  'Липа': '#E7D3A6',
+  'Вільха': '#CF9A6C',
+  'Фінська ялина': '#E3C98F',
+  'Канадський кедр': '#A85F36',
+  'Абаш': '#E5C88D',
+  'Термодеревина (термолипа, термоосина)': '#5B3A26',
+}
+const GRAIN = 'repeating-linear-gradient(92deg, rgba(60,30,10,.1) 0 2px, transparent 2px 19px, rgba(60,30,10,.05) 19px 22px, transparent 22px 47px)'
+
+function WoodPicker() {
+  const [active, setActive] = useState(WOOD_TABLE[0].wood)
+  return (
+    <section className="bg-paper page-section">
+      <div className="page-wrap">
+        <WordsReveal text="З чого ми будуємо" className="heading-display" />
+        <Reveal delay={0.1}>
+          <p className="mt-6 mb-10 text-lg leading-relaxed text-steel max-w-3xl">
+            Дерево для парної підбираємо під ваш бюджет і спосіб використання.
+          </p>
+        </Reveal>
+
+        <div className="grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <motion.div
+              aria-hidden="true"
+              animate={{ backgroundColor: WOOD_TONES[active] }}
+              transition={{ duration: 0.6 }}
+              style={{ backgroundImage: GRAIN }}
+              className="relative flex h-44 items-end overflow-hidden rounded-3xl p-6 lg:sticky lg:top-24 lg:h-[420px]"
+            >
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={active}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25 }}
+                  className={`m-0 font-display text-2xl font-medium tracking-[-0.015em] ${active.startsWith('Термо') || active.startsWith('Канад') ? 'text-white' : 'text-ink'}`}
+                >
+                  {active.split(' (')[0]}
+                </motion.p>
+              </AnimatePresence>
+            </motion.div>
+          </div>
+
+          <ul className="lg:col-span-8">
+            {WOOD_TABLE.map(row => (
+              <li
+                key={row.wood}
+                onPointerEnter={() => setActive(row.wood)}
+                className={`border-t border-flue last:border-b transition-colors ${active === row.wood ? 'bg-plaster' : ''}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActive(row.wood)}
+                  onFocus={() => setActive(row.wood)}
+                  aria-pressed={active === row.wood}
+                  className="grid w-full gap-2 px-4 py-5 text-left sm:grid-cols-[1fr_1.4fr_1fr] sm:gap-6"
+                >
+                  <span className="font-display text-lg font-medium leading-snug">{row.wood}</span>
+                  <span className="leading-relaxed text-steel">{row.features}</span>
+                  <span className="leading-relaxed text-steel">{row.bestFor}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─── Page ─── */
 export default function MontazhSaunTaBan() {
-  const rootRef = useRef(null)
-  const gaugeFillRef = useRef(null)
-
   const [openFaq, setOpenFaq] = useState(0)
 
   const { data: portfolio = [], isLoading: portfolioLoading } = useQuery({
@@ -231,37 +397,8 @@ export default function MontazhSaunTaBan() {
     queryFn: fetchSaunaGallery,
   })
 
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.set('.sh-hero-fade', { y: 22, opacity: 0 })
-
-      gsap.to('.sh-hero-fade', { y: 0, opacity: 1, duration: 0.7, stagger: 0.12, ease: 'power2.out', delay: 0.1 })
-
-      if (gaugeFillRef.current) {
-        gsap.fromTo(gaugeFillRef.current,
-          { width: '0%' },
-          { width: '100%', duration: 1.4, ease: 'power2.out', delay: 0.5 }
-        )
-      }
-
-      gsap.utils.toArray('.sh-reveal').forEach((el) => {
-        gsap.fromTo(el,
-          { y: 48, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true } }
-        )
-      })
-    }, rootRef)
-    return () => ctx.revert()
-  }, [])
-
-  // Portfolio height changes once photos load, so scroll-reveal positions below it need recalculating
-  useLayoutEffect(() => {
-    ScrollTrigger.refresh()
-  }, [portfolio.length, portfolioLoading])
-
   return (
-    <div ref={rootRef} className="bg-forge-black text-forge-cream">
+    <div className="bg-plaster text-ink">
       <Helmet>
         <title>Монтаж сауни та бані під ключ у Києві та області — Буржуйка</title>
         <meta name="description" content="Монтаж саун і бань під ключ у Києві та області: каркас, утеплення, вагонка, полиці, піч і димохід. Виїзд на заміри, кошторис, гарантія. 500+ проектів." />
@@ -280,429 +417,134 @@ export default function MontazhSaunTaBan() {
       <Navbar />
 
       {/* ═══════════ HERO ═══════════ */}
-      <section className="relative overflow-hidden bg-forge-black pt-28 pb-20 lg:pt-32 lg:pb-24">
-        {/* Ghost numeral — the sauna's defining fact, bleeding off the edge */}
-        <div
-          aria-hidden="true"
-          className="absolute -top-10 right-0 lg:-right-8 select-none pointer-events-none font-display font-bold text-brand-primary/[0.06] leading-none text-[200px] sm:text-[280px] lg:text-[360px]"
-        >
-          100°
-        </div>
-        <div className="absolute top-1/4 left-1/4 w-[420px] h-[420px] bg-brand-primary/6 rounded-full blur-[130px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="sh-hero-fade flex items-center gap-2 text-forge-muted text-sm mb-6">
-            <Link to="/" className="hover:text-brand-primary transition-colors">Головна</Link>
-            <span className="text-forge-border">/</span>
-            <span className="text-forge-cream">Монтаж саун та бань</span>
-          </nav>
-
-          <div className="sh-hero-fade flex items-center gap-3 mb-6">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-              Монтаж саун та бань — Буржуйка
-            </span>
-          </div>
-
-          <h1 className="sh-hero-fade font-display font-bold uppercase leading-[1.02] mb-6 text-4xl sm:text-5xl lg:text-6xl max-w-4xl">
-            <span className="block text-forge-cream">Монтаж саун та бань під ключ</span>
-            <span className="block text-brand-primary">у Києві та області</span>
-          </h1>
-
-          <p className="sh-hero-fade text-forge-dim text-base sm:text-lg leading-relaxed max-w-2xl mb-12">
-            Облаштовуємо парні від каркасу до першого пару: утеплення, вагонка, полиці, піч, димохід, вентиляція та світло — одна команда і одна гарантія.
-          </p>
-
-          {/* Temperature gauge — signature element */}
-          <div className="sh-hero-fade max-w-xl mb-10">
-            <div className="flex items-baseline justify-between mb-3">
-              <span className="text-forge-dim text-xs uppercase tracking-[0.2em]">Температура в парній</span>
-              <span className="font-display text-xl font-bold text-brand-primary leading-none">90–110 °C</span>
-            </div>
-            <div
-              role="img"
-              aria-label="Шкала температури парної від 0 до 110 градусів з робочою зоною 90–110 °C"
-              className="relative h-2 bg-forge-border"
-            >
-              {/* Hot-zone band (90–110°C) */}
-              <div
-                className="absolute inset-y-0 bg-brand-primary/25"
-                style={{ left: `${gaugePct(GAUGE_HOT_ZONE.from)}%`, right: 0 }}
-              />
-              {/* Animated fill */}
-              <div
-                ref={gaugeFillRef}
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-forge-muted via-brand-primary to-brand-light"
-                style={{ width: '0%' }}
-              />
-              {/* Ticks */}
-              {GAUGE_TICKS.map(t => (
-                <div
-                  key={t}
-                  className="absolute top-0 bottom-0 w-px bg-forge-black/40"
-                  style={{ left: `${gaugePct(t)}%` }}
-                />
-              ))}
-            </div>
-            <div className="relative h-4 mt-1.5">
-              {GAUGE_TICKS.map(t => (
-                <span
-                  key={t}
-                  className="absolute -translate-x-1/2 text-forge-muted text-[11px]"
-                  style={{ left: `${gaugePct(t)}%` }}
-                >
-                  {t}°
-                </span>
-              ))}
-              <span className="absolute right-0 text-brand-primary text-[11px] font-semibold">110°+</span>
-            </div>
-          </div>
-
-          <div className="sh-hero-fade flex flex-wrap items-center gap-4 mb-10">
-            <Link
-              to="/contacts#consultation"
-              className="inline-flex items-center gap-2.5 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all hover:orange-glow"
-            >
-              Прорахувати сауну <span>→</span>
-            </Link>
-            <a
-              href="https://t.me/+380688429412"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Надіслати фото приміщення в Telegram"
-              className="inline-flex items-center gap-2.5 border border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white font-semibold px-5 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <TgIcon className="w-4 h-4" />
-              Telegram
-            </a>
-            <a
-              href="viber://chat?number=%2B380688429412"
-              aria-label="Надіслати фото приміщення в Viber"
-              className="inline-flex items-center gap-2.5 border border-[#7360F2] text-[#7360F2] hover:bg-[#7360F2] hover:text-white font-semibold px-5 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <VbIcon className="w-4 h-4" />
-              Viber
-            </a>
-          </div>
-
-    
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-forge-border" />
-      </section>
+      <SaunaHero />
 
       {/* ═══════════ INTRO ═══════════ */}
-      <section className="py-20 bg-forge-surface">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 sh-reveal">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Про монтаж</span>
-          </div>
-          <div className="space-y-5 text-forge-muted text-base leading-relaxed">
-            <p>
-              Сауна — це не просто кімната, обшита деревом. Це приміщення, де температура піднімається до 90–110 °C, а вологість змінюється за лічені хвилини. Помилки в пароізоляції, вентиляції чи монтажі печі тут коштують дорого: волога в стінах, грибок, тріщини у вагонці або небезпека пожежі.
-            </p>
-            <p>
-              «Буржуйка» понад 10 років займається монтажем печей, камінів і димоходів, тому парну ми будуємо від її серця — нагрівального обладнання. Ми самі підбираємо піч, самі монтуємо димохід і самі облаштовуємо парну, тож відповідаємо за весь результат, а не за окремий етап.
-            </p>
-            <p>
-              Працюємо з квартирами, приватними будинками, дачами та комерційними об&apos;єктами: від компактної сауни на 2 особи до бані з комплексом відпочинку.
-            </p>
+      <section className="page-section">
+        <div className="page-wrap grid gap-10 lg:grid-cols-12">
+          <WordsReveal text="Парну будуємо від її серця" className="heading-display lg:col-span-6" />
+          <div className="lg:col-span-5 lg:col-start-8 space-y-5 text-lg leading-relaxed text-steel">
+            <Reveal><p>Сауна — це не просто кімната, обшита деревом. Це приміщення, де температура піднімається до 90–110 °C, а вологість змінюється за лічені хвилини. Помилки в пароізоляції, вентиляції чи монтажі печі тут коштують дорого: волога в стінах, грибок, тріщини у вагонці або небезпека пожежі.</p></Reveal>
+            <Reveal delay={0.1}><p>«Буржуйка» понад 10 років займається монтажем печей, камінів і димоходів, тому парну ми будуємо від її серця — нагрівального обладнання. Ми самі підбираємо піч, самі монтуємо димохід і самі облаштовуємо парну, тож відповідаємо за весь результат, а не за окремий етап.</p></Reveal>
+            <Reveal delay={0.2}><p>Працюємо з квартирами, приватними будинками, дачами та комерційними об&apos;єктами: від компактної сауни на 2 особи до бані з комплексом відпочинку.</p></Reveal>
           </div>
         </div>
       </section>
 
       {/* ═══════════ ВАРІАНТИ ОБЛАШТУВАННЯ ═══════════ */}
-      <section className="py-24 bg-forge-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Варіанти облаштування</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-14 sh-reveal">
-            Які сауни та бані ми монтуємо
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-forge-border">
-            {SAUNA_TYPES.map(t => (
-              <div key={t.id} className="sh-reveal relative bg-forge-card p-7 overflow-hidden">
-                <span className="absolute top-3 right-5 font-display text-5xl font-bold text-white/5 leading-none select-none">
-                  {t.id}
-                </span>
-                <h3 className="font-display text-lg font-bold uppercase text-forge-cream mb-3 relative">{t.title}</h3>
-                <p className="text-forge-muted text-sm leading-relaxed relative">{t.text}</p>
-              </div>
+      <section className="bg-forge-black text-forge-cream page-section">
+        <div className="page-wrap">
+          <WordsReveal text="Які сауни та бані ми монтуємо" className="heading-display mb-12 max-w-4xl" />
+          <div className="grid justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {SAUNA_TYPES.map((t, i) => (
+              <Reveal key={t.id} delay={(i % 3) * 0.08} className="h-full">
+                <SpotlightCard className="h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-brand-light/50">
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <h3 className="font-display text-2xl font-medium leading-snug tracking-[-0.015em] mb-3">{t.title}</h3>
+                    <p className="leading-relaxed text-forge-dim">{t.text}</p>
+                  </div>
+                </SpotlightCard>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ ЩО ВХОДИТЬ У РОБОТУ ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Монтаж під ключ</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-14 sh-reveal">
-            Що входить у роботу
-          </h2>
+      <InstallSteps />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-10">
-            {INSTALL_STEPS.map(step => (
-              <div key={step.id} className="sh-reveal grid grid-cols-[auto_1fr] gap-5">
-                <span className="font-display text-4xl font-bold text-brand-primary/40 leading-none flex-shrink-0">
-                  {step.id}
-                </span>
-                <div>
-                  <h3 className="font-display text-base font-bold uppercase text-forge-cream mb-2">{step.title}</h3>
-                  <p className="text-forge-muted text-sm leading-relaxed">{step.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <WoodPicker />
 
-      {/* ═══════════ З ЧОГО МИ БУДУЄМО ═══════════ */}
-      <section className="py-24 bg-forge-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Матеріали та обладнання</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-8 sh-reveal">
-            З чого ми будуємо
-          </h2>
-          <p className="text-forge-muted text-base leading-relaxed mb-10 max-w-3xl sh-reveal">
-            Дерево для парної підбираємо під ваш бюджет і спосіб використання:
-          </p>
-
-          {/* Wood table — real table on desktop, stacked cards on mobile */}
-          <div className="sh-reveal mb-4">
-            {/* Desktop / tablet table */}
-            <div className="hidden md:block overflow-x-auto border border-forge-border">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="bg-forge-card">
-                    <th className="text-left font-display uppercase text-xs tracking-widest text-brand-primary px-5 py-4 border-b border-forge-border">Порода</th>
-                    <th className="text-left font-display uppercase text-xs tracking-widest text-brand-primary px-5 py-4 border-b border-forge-border">Особливості</th>
-                    <th className="text-left font-display uppercase text-xs tracking-widest text-brand-primary px-5 py-4 border-b border-forge-border">Де краще</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {WOOD_TABLE.map((row, i) => (
-                    <tr key={row.wood} className={i % 2 === 1 ? 'bg-forge-surface' : ''}>
-                      <td className="px-5 py-4 align-top text-forge-cream font-semibold border-b border-forge-border whitespace-nowrap">{row.wood}</td>
-                      <td className="px-5 py-4 align-top text-forge-muted border-b border-forge-border">{row.features}</td>
-                      <td className="px-5 py-4 align-top text-forge-muted border-b border-forge-border">{row.bestFor}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile stacked cards — no horizontal scroll */}
-            <div className="md:hidden space-y-4">
-              {WOOD_TABLE.map(row => (
-                <div key={row.wood} className="bg-forge-card border border-forge-border p-5">
-                  <h4 className="font-display text-base font-bold uppercase text-brand-primary mb-3">{row.wood}</h4>
-                  <dl className="space-y-2 text-sm">
-                    <div>
-                      <dt className="text-forge-dim text-xs uppercase tracking-widest mb-1">Особливості</dt>
-                      <dd className="text-forge-muted leading-relaxed">{row.features}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-forge-dim text-xs uppercase tracking-widest mb-1">Де краще</dt>
-                      <dd className="text-forge-muted leading-relaxed">{row.bestFor}</dd>
-                    </div>
-                  </dl>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Heaters / chimney / other materials */}
-          <div className="space-y-6 max-w-3xl mt-12">
-            <p className="sh-reveal text-forge-muted text-sm leading-relaxed">
-              <span className="text-forge-cream font-semibold">Нагрівальне обладнання. </span>
+      {/* ═══════════ МАТЕРІАЛИ ═══════════ */}
+      <section className="pb-20 lg:pb-28 bg-paper">
+        <div className="page-wrap grid lg:grid-cols-3 gap-10">
+          <Reveal>
+            <h3 className="font-display text-xl font-medium mb-3">Нагрівальне обладнання</h3>
+            <p className="leading-relaxed text-steel">
               Продаємо та монтуємо{' '}
-              <Link to="/catalog" className="text-brand-primary underline hover:text-brand-dark transition-colors">
-                печі для саун
-              </Link>{' '}
-              зі свого каталогу: електрокам&apos;янки з вбудованим або виносним пультом, дров&apos;яні печі з топкою з передбанника, печі з парогенератором. Підбираємо потужність за об&apos;ємом парної та утепленням — щоб сауна прогрівалась за 40–60 хвилин без перевитрати енергії.
+              <Link to="/catalog?category=sauna" className="text-link">печі для саун</Link>{' '}
+              зі свого каталогу: електрокам&apos;янки з вбудованим або виносним пультом, дров&apos;яні печі з топкою з передбанника, печі з парогенератором. Підбираємо потужність за об&apos;ємом парної та утепленням, щоб сауна прогрівалась за 40–60 хвилин без перевитрати енергії.
             </p>
-            <p className="sh-reveal text-forge-muted text-sm leading-relaxed">
-              <span className="text-forge-cream font-semibold">Димохід для печі в бані. </span>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="font-display text-xl font-medium mb-3">Димохід для печі в бані</h3>
+            <p className="leading-relaxed text-steel">
               Монтуємо утеплені (сендвіч) димоходи з нержавіючої сталі, прохідні вузли через стелю та покрівлю, захисні екрани. Це наша основна спеціалізація, тому безпечне виведення диму — частина кожного проекту з дров&apos;яною піччю.
             </p>
-            <p className="sh-reveal text-forge-muted text-sm leading-relaxed">
-              <span className="text-forge-cream font-semibold">Інші матеріали: </span>
-              базальтова вата, фольгований пароізоляційний шар і алюмінієвий скотч, термостійкі кабелі та світильники, загартоване скло для дверей, просочення для полиць на основі натуральних олій і воску.
+          </Reveal>
+          <Reveal delay={0.2}>
+            <h3 className="font-display text-xl font-medium mb-3">Інші матеріали</h3>
+            <p className="leading-relaxed text-steel">
+              Базальтова вата, фольгований пароізоляційний шар і алюмінієвий скотч, термостійкі кабелі та світильники, загартоване скло для дверей, просочення для полиць на основі натуральних олій і воску.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ═══════════ ВІД ЗАЯВКИ ДО ПЕРШОГО ПАРУ ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Процес</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-12 sh-reveal">
-            Від заявки до першого пару
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-forge-border">
-            {PROCESS_STEPS.map(step => (
-              <div key={step.id} className="sh-reveal bg-forge-card p-6">
-                <span className="font-display text-3xl font-bold text-brand-primary/30 leading-none block mb-3">{step.id}</span>
-                <h3 className="font-display text-lg font-bold uppercase text-forge-cream mb-2">{step.title}</h3>
-                <p className="text-forge-muted text-sm leading-relaxed">{step.text}</p>
-              </div>
+      <section className="bg-forge-black text-forge-cream page-section">
+        <div className="page-wrap">
+          <WordsReveal text="Від заявки до першого пару" className="heading-display mb-12 max-w-4xl" />
+          <ol className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+            {PROCESS_STEPS.map((step, i) => (
+              <Reveal as="li" key={step.id} delay={(i % 3) * 0.1} className="border-t border-white/15 pt-5">
+                <span className="font-display text-5xl font-medium tracking-[-0.03em] text-brand-light">{Number(step.id)}</span>
+                <h3 className="mt-3 font-display text-xl font-medium tracking-[-0.01em]">{step.title}</h3>
+                <p className="mt-2 leading-relaxed text-forge-dim">{step.text}</p>
+              </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ ВАРТІСТЬ САУНИ ПІД КЛЮЧ ═══════════ */}
-      <section className="py-24 bg-forge-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Ціни на монтаж</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-6 sh-reveal">
-            Вартість сауни під ключ
-          </h2>
-          <p className="text-forge-muted text-base leading-relaxed mb-14 max-w-3xl sh-reveal">
-            Нижче — типові комплектації. Точну ціну розраховуємо після замірів: вона залежить від розмірів, породи дерева, печі та декору.
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            {SAUNA_PACKAGES.map(pkg => (
-              <div key={pkg.id} className="sh-reveal flex flex-col bg-forge-card border border-forge-border hover:border-brand-primary/50 transition-colors p-8">
-                <h3 className="font-display text-2xl font-bold uppercase text-forge-cream mb-1">{pkg.title}</h3>
-                <p className="text-forge-dim text-xs uppercase tracking-widest mb-6">{pkg.size} · {pkg.persons}</p>
-
-                <ul className="space-y-2 mb-8 flex-1">
-                  {pkg.included.map(item => (
-                    <li key={item} className="flex items-start gap-2 text-forge-muted text-sm leading-relaxed">
-                      <span className="w-1 h-1 rounded-full bg-brand-primary flex-shrink-0 mt-2" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mb-6">
-                  <span className="text-forge-dim text-xs uppercase tracking-wider">від </span>
-                  <span className="font-display text-3xl font-bold text-brand-primary leading-none">
-                    {pkg.priceFrom.toLocaleString('uk-UA')}
-                  </span>
-                  <span className="text-forge-dim text-xs ml-1">грн</span>
-                </div>
-
-                <Link
-                  to="/contacts#consultation"
-                  className="inline-flex items-center justify-center gap-2 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-semibold px-6 py-3 text-sm uppercase tracking-widest transition-all"
-                >
-                  Замовити <span>→</span>
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-forge-muted text-sm leading-relaxed mb-10 max-w-3xl sh-reveal">
-            Окремо можна замовити монтаж печі та димоходу для вже готової парної, переобшивку старої сауни або лише продаж обладнання.
-          </p>
-
-          <div className="sh-reveal">
-            <Link
-              to="/contacts#consultation"
-              className="inline-flex items-center gap-2.5 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all hover:orange-glow"
-            >
-              Отримати точний кошторис <span>→</span>
-            </Link>
-          </div>
+          </ol>
         </div>
       </section>
 
       {/* ═══════════ ЧОМУ ОБИРАЮТЬ БУРЖУЙКУ ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Довіра</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-12 sh-reveal">
-            Чому обирають Буржуйку
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ADVANTAGES.map(a => (
-              <div key={a.title} className="sh-reveal bg-forge-black border border-forge-border p-6">
-                <h3 className="font-display text-base font-bold uppercase text-brand-primary mb-3 leading-snug">{a.title}</h3>
-                <p className="text-forge-muted text-sm leading-relaxed">{a.text}</p>
-              </div>
+      <section className="page-section">
+        <div className="page-wrap">
+          <WordsReveal text="Чому обирають Буржуйку" className="heading-display mb-12" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-10">
+            {ADVANTAGES.map((a, i) => (
+              <Reveal key={a.title} delay={(i % 3) * 0.08} className="border-t border-flue pt-5">
+                <h3 className="font-display text-xl font-medium leading-snug mb-2">{a.title}</h3>
+                <p className="leading-relaxed text-steel">{a.text}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ═══════════ НАШІ РОБОТИ ═══════════ */}
-      <section hidden={!portfolioLoading && portfolio.length === 0} className="py-24 bg-forge-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 sh-reveal">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-                <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Портфоліо</span>
-              </div>
-              <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none">
-                Наші роботи
-              </h2>
-            </div>
-            <Link
-              to="/gallery"
-              className="inline-flex items-center gap-2 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-semibold px-6 py-3 text-sm uppercase tracking-widest transition-all flex-shrink-0"
-            >
-              Дивитись усі роботи <span>→</span>
-            </Link>
+      <section hidden={!portfolioLoading && portfolio.length === 0} className="pb-20 lg:pb-28">
+        <div className="page-wrap">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+            <WordsReveal text="Наші роботи" className="heading-display" />
+            <Link to="/gallery" className="text-link">Дивитись усі роботи</Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sh-reveal">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {portfolioLoading
               ? Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="aspect-square bg-forge-surface animate-pulse" aria-hidden="true" />
+                  <div key={i} className="aspect-square rounded-2xl bg-paper animate-pulse" aria-hidden="true" />
                 ))
-              : portfolio.map(img => (
-                  <div key={img.id} className="aspect-square overflow-hidden bg-forge-surface">
-                    <img
+              : portfolio.map((img, i) => (
+                  <Reveal key={img.id} delay={(i % 4) * 0.07} className="aspect-square overflow-hidden rounded-2xl bg-paper">
+                    <motion.img
                       src={img.url}
                       alt="Монтаж сауни — приклад роботи"
                       className="w-full h-full object-cover"
                       loading="lazy"
+                      whileHover={{ scale: 1.07 }}
+                      transition={{ duration: 0.7, ease: EASE }}
                     />
-                  </div>
+                  </Reveal>
                 ))}
           </div>
         </div>
       </section>
 
       {/* ═══════════ ПИТАННЯ ТА ВІДПОВІДІ ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4 sh-reveal">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">FAQ</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-12 sh-reveal">
-            Питання та відповіді
-          </h2>
-
-          <div className="space-y-3 sh-reveal">
+      <section className="bg-paper page-section">
+        <div className="page-wrap grid gap-10 lg:grid-cols-12">
+          <WordsReveal text="Питання та відповіді" className="heading-display lg:col-span-5" />
+          <div className="lg:col-span-6 lg:col-start-7">
             {FAQS.map((f, i) => (
               <FaqItem
                 key={f.q}
@@ -717,45 +559,11 @@ export default function MontazhSaunTaBan() {
         </div>
       </section>
 
-      {/* ═══════════ CONTACTS ═══════════ */}
-      <section className="py-24 bg-forge-black relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-primary/6 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sh-reveal">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-10 bg-brand-primary" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Контакти</span>
-            <div className="h-px w-10 bg-brand-primary" />
-          </div>
-
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream mb-10">
-            Монтаж
-          </h2>
-
-          <a href="tel:+380935428302" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block mb-10">
-            +38 093 542 83 02
-          </a>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="https://t.me/+380688429412"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 border border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <TgIcon className="w-4 h-4" />
-              Telegram
-            </a>
-            <a
-              href="viber://chat?number=%2B380688429412"
-              className="flex items-center gap-2.5 border border-[#7360F2] text-[#7360F2] hover:bg-[#7360F2] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <VbIcon className="w-4 h-4" />
-              Viber
-            </a>
-          </div>
-        </div>
-      </section>
+      <ContactPanel
+        title="Плануєте сауну?"
+        lead="Надішліть фото та розміри приміщення в Telegram чи Viber. Розрахуємо орієнтовну вартість того ж дня."
+        showSales={false}
+      />
 
       <Footer />
     </div>

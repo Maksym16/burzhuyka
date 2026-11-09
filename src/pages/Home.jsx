@@ -1,79 +1,28 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
+import PropTypes from 'prop-types'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { fetchProducts } from '../api/products'
+import ContactPanel from '../components/ContactPanel'
+import FlueDiagram from '../components/FlueDiagram'
+import { PhoneIcon } from '../components/Icons'
+import { CountUp, EASE, Embers, Marquee, ParallaxImage, Reveal, SpotlightCard, WordsReveal } from '../components/fx'
+import { fetchManufacturers, fetchProducts } from '../api/products'
 import { fetchGallery } from '../api/gallery'
 import { fetchHeroCarousel } from '../api/heroCarousel'
 import { fetchReviews, submitReview } from '../api/reviews'
 import { uploadReviewImage } from '../api/upload'
 
-gsap.registerPlugin(ScrollTrigger)
-
 /* ─── Hero carousel images ─── */
 const HERO_IMAGES = [
+  { src: '/home_page_imgs/pexels-alexander-mass-748453803-36989812.jpg', alt: 'Опалювальна піч у вітальні' },
   { src: '/home_page_imgs/pexels-artbovich-6301175.jpg', alt: 'Камін в інтер\'єрі' },
-  { src: '/home_page_imgs/borsuika.jpg',                 alt: 'Опалювальна піч' },
-  { src: '/home_page_imgs/heater.jpg',                   alt: 'Нагрівач' },
-  { src: '/home_page_imgs/sauna.jpg',                    alt: 'Сауна' },
-  { src: '/home_page_imgs/sauna_shelves.jpg',            alt: 'Полиці сауни' },
+  { src: '/home_page_imgs/roof.jpg', alt: 'Димохід на покрівлі' },
+  { src: '/home_page_imgs/sauna_shelves.jpg', alt: 'Сауна з піччю та полицями' },
 ]
-
-function HeroCarousel({ images: slides = HERO_IMAGES }) {
-  const [current, setCurrent] = useState(0)
-
-  useEffect(() => {
-    setCurrent(0)
-  }, [slides])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent(i => (i + 1) % slides.length)
-    }, 4000)
-    return () => clearInterval(timer)
-  }, [slides.length])
-
-  return (
-    <div className="relative">
-      {/* Offset frame */}
-      <div className="absolute -top-5 -right-5 w-full h-full border border-brand-primary/25 pointer-events-none z-10" />
-
-      {/* Slides */}
-      <div className="relative w-full h-[520px] overflow-hidden">
-        {slides.map((img, i) => (
-          <img
-            key={img.src || img.url}
-            src={img.src || img.url}
-            alt={img.alt || ''}
-            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
-            style={{ opacity: i === current ? 1 : 0 }}
-          />
-        ))}
-      </div>
-
-      {/* Corner accents */}
-      <div className="absolute bottom-0 left-0 h-1 w-20 bg-brand-primary z-10" />
-      <div className="absolute bottom-0 left-0 w-1 h-20 bg-brand-primary z-10" />
-
-      {/* Pagination dots */}
-      <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`h-3 rounded-full transition-all duration-300 ${
-              i === current ? 'bg-brand-primary w-7' : 'w-3 bg-white/40 hover:bg-white/70'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
 
 /* ─── Data ─── */
 const SERVICES = [
@@ -81,7 +30,7 @@ const SERVICES = [
     id: '01',
     title: 'Монтаж димоходів',
     desc: 'Встановлення одностінних та утеплених (термо) димоходів під ключ.',
-    img:  '/home_page_imgs/side_pipe.jpg',
+    img:  '/home_page_imgs/roof.jpg',
     points: ['Встановлення одностінних та утеплених (термо) димоходів', 'Гільзовка димоходних каналів', 'Монтаж керамічних димоходів'],
     detail: 'Правильно змонтований димохід — це основа безпечної та ефективної роботи будь-якого опалювального пристрою. Ми встановлюємо одностінні та утепленні (термо) димоходи, виконуємо гільзовку існуючих цегляних каналів нержавіючою трубою, а також монтуємо керамічні димохідні системи провідних виробників.',
     fullPoints: ['Встановлення одностінних та утеплених (термо) димоходів', 'Гільзовка димохідних каналів', 'Монтаж керамічних димоходів', 'Перевірка тяги та пробний розпал'],
@@ -118,46 +67,34 @@ const TRUST_POINTS = [
 ]
 
 const PROCESS_STEPS = [
-  { id: '01', title: 'Виїзд на об\'єкт', text: 'Оглядаємо місце монтажу, оцінюємо стан приміщення та його конструктивні особливості, чи підходить воно під монтаж обладнання, робимо заміри та обговорюємо проект.' },
-  { id: '02', title: 'Консультація', text: 'З\'ясовуємо деталі вашого проекту, підбираємо оптимальне обладнання під ваш бюджет і задачі.' },
-  { id: '03', title: 'Кошторис', text: 'Надаємо детальний кошторис із переліком робіт і матеріалів.' },
-  { id: '04', title: 'Доставка', text: 'Робимо відправку або привозимо матеріали, камін чи обладнання для сауни разом із усіма монтажними матеріалами (за домовленістю).' },
-  { id: '05', title: 'Монтаж', text: 'Виконуємо встановлення в обумовлені й максимально стислі терміни з дотриманням норм безпеки та вимог виробника.' },
-  { id: '06', title: 'Продаж', text: 'Також можемо підібрати вам обладнання або прорахувати димохід без монтажу.' },
+  { id: '1', title: 'Виїзд на об\'єкт', text: 'Оглядаємо місце монтажу, оцінюємо стан приміщення та його конструктивні особливості, чи підходить воно під монтаж обладнання, робимо заміри та обговорюємо проект.' },
+  { id: '2', title: 'Консультація', text: 'З\'ясовуємо деталі вашого проекту, підбираємо оптимальне обладнання під ваш бюджет і задачі.' },
+  { id: '3', title: 'Кошторис', text: 'Надаємо детальний кошторис із переліком робіт і матеріалів.' },
+  { id: '4', title: 'Доставка', text: 'Робимо відправку або привозимо матеріали, камін чи обладнання для сауни разом із усіма монтажними матеріалами (за домовленістю).' },
+  { id: '5', title: 'Монтаж', text: 'Виконуємо встановлення в обумовлені й максимально стислі терміни з дотриманням норм безпеки та вимог виробника.' },
 ]
-
 
 const CATALOG_CATS = [
-  { label: 'Печі для саун',    categoryId: 'sauna',     icon: '🔥' },
-  { label: 'Опалювальні печі', categoryId: 'heating',   icon: '🏠' },
-  { label: 'Каміни',           categoryId: 'fireplace', icon: '🪵' },
+  { label: 'Печі для саун',    categoryId: 'sauna',     img: '/home_page_imgs/sauna_heater.jpg' },
+  { label: 'Опалювальні печі', categoryId: 'heating',   img: '/home_page_imgs/heater.jpg' },
+  { label: 'Каміни',           categoryId: 'fireplace', img: '/home_page_imgs/fireplace.jpg' },
 ]
 
+function modelsLabel(n) {
+  const tens = n % 100, ones = n % 10
+  if (tens >= 11 && tens <= 14) return `${n} моделей`
+  if (ones === 1) return `${n} модель`
+  if (ones >= 2 && ones <= 4) return `${n} моделі`
+  return `${n} моделей`
+}
+
 const STATS = [
-  { num: '500+',  label: 'Виконаних проектів' },
-  { num: '10+',    label: 'Років на ринку'      },
-  { num: '1+',     label: 'Роки гарантії на послуги та продукцію'       },
-  { num: '24/7',  label: 'Підтримка клієнтів'  },
+  { num: '500+', label: 'Виконаних проектів' },
+  { num: '10+',  label: 'Років на ринку' },
+  { num: 'Від 1 року', label: 'Гарантії на послуги та продукцію' },
 ]
 
 const REVIEW_COMMENT_LIMIT = 250
-
-/* ─── SVG icons ─── */
-function TgIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.83.941z"/>
-    </svg>
-  )
-}
-
-function VbIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11.4 0C5.5.2 1.6 3.8.8 9.1c-.4 3-.1 5.8 1.2 8.4.5 1 .8 2 .7 3.1-.1 1-.3 2-.5 3-.2.6 0 1.1.6.9 1.2-.4 2.4-.9 3.5-1.5.8-.4 1.6-.5 2.5-.3 2.1.5 4.2.6 6.3.2 5.1-1 8.6-4.7 8.9-9.9.2-2.9-.5-5.5-2.2-7.8C19.7 2 16.5.3 12.8.1c-.5 0-.9 0-1.4-.1z"/>
-    </svg>
-  )
-}
 
 function StarRating({ value, onChange, size = 'w-5 h-5' }) {
   const interactive = typeof onChange === 'function'
@@ -169,7 +106,7 @@ function StarRating({ value, onChange, size = 'w-5 h-5' }) {
           type="button"
           disabled={!interactive}
           onClick={() => onChange?.(n)}
-          className={`${interactive ? 'cursor-pointer' : 'cursor-default'} ${n <= value ? 'text-brand-primary' : 'text-forge-border'}`}
+          className={`${interactive ? 'cursor-pointer' : 'cursor-default'} ${n <= value ? 'text-brand-primary' : 'text-flue'}`}
           aria-label={interactive ? `Оцінка ${n}` : undefined}
         >
           <svg className={size} fill="currentColor" viewBox="0 0 20 20">
@@ -181,9 +118,435 @@ function StarRating({ value, onChange, size = 'w-5 h-5' }) {
   )
 }
 
+StarRating.propTypes = {
+  value: PropTypes.number.isRequired,
+  onChange: PropTypes.func,
+  size: PropTypes.string,
+}
+
+/* ─── Hero ─── */
+const HERO_WORDS = ['димоходи', 'каміни', 'сауни', 'печі']
+const SLIDE_MS = 3000
+
+function Hero({ slides }) {
+  const ref = useRef(null)
+  const reduced = useReducedMotion()
+  const [current, setCurrent] = useState(0)
+  const index = current % slides.length
+  const word = HERO_WORDS[current % HERO_WORDS.length]
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-18%'])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+
+  useEffect(() => {
+    if (reduced) return
+    const timer = setTimeout(() => setCurrent(c => c + 1), SLIDE_MS)
+    return () => clearTimeout(timer)
+  }, [current, reduced])
+
+  const slide = slides[index]
+
+  return (
+    <section ref={ref} className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-forge-black text-forge-cream">
+      <motion.div className="absolute inset-0" style={{ y: imageY }}>
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={slide.src || slide.url}
+            src={slide.src || slide.url}
+            alt={slide.alt || ''}
+            className="absolute inset-0 h-full w-full object-cover"
+            initial={{ opacity: 0, scale: 1.14 }}
+            animate={{ opacity: 1, scale: 1.02 }}
+            exit={{ opacity: 0 }}
+            transition={{ opacity: { duration: 1.2 }, scale: { duration: 7, ease: 'linear' } }}
+          />
+        </AnimatePresence>
+      </motion.div>
+      <div className="absolute inset-0 bg-gradient-to-t from-forge-black via-forge-black/40 to-forge-black/15" />
+      <div className="absolute inset-0 bg-gradient-to-r from-forge-black/60 via-forge-black/10 to-transparent" />
+      <Embers />
+
+      <motion.div className="page-wrap relative w-full pt-28 pb-8" style={{ y: contentY, opacity: contentOpacity }}>
+        <h1 className="sr-only">Печі, каміни, димоходи та сауни: продаємо, монтуємо, гарантуємо</h1>
+        <div aria-hidden="true" className="font-display font-medium leading-[0.98] tracking-[-0.04em] text-[clamp(3.25rem,11.5vw,10.5rem)]">
+          <div className="overflow-hidden pb-[0.08em]">
+            <motion.div initial={{ y: '105%' }} animate={{ y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.45 }}>
+              Монтуємо
+            </motion.div>
+          </div>
+          <div className="relative overflow-hidden pb-[0.08em] text-brand-light">
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={word}
+                initial={{ y: '105%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '-105%' }}
+                transition={{ duration: 0.8, ease: EASE }}
+              >
+                {word}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-10 lg:grid-cols-12 lg:items-end">
+          <Reveal delay={0.9} className="lg:col-span-6">
+            <p className="max-w-lg text-lg leading-relaxed text-forge-cream/85">
+              Продаємо, монтуємо, гарантуємо. Печі, каміни та обладнання для бань і лазні під ключ, Київ та область.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link to="/contacts#consultation" className="btn-primary">Отримати консультацію</Link>
+              <a href="tel:+380935428302" className="btn-on-dark">
+                <PhoneIcon className="w-4 h-4" />
+                +38 093 542 83 02
+              </a>
+            </div>
+          </Reveal>
+
+          <Reveal delay={1.05} className="lg:col-span-5 lg:col-start-8">
+            <dl className="grid grid-cols-3 gap-5">
+              {STATS.map(s => (
+                <div key={s.label} className="flex flex-col-reverse justify-end gap-2 border-t border-white/25 pt-3">
+                  <dt className="text-sm leading-snug text-forge-cream/70">{s.label}</dt>
+                  <dd className="m-0 font-display text-xl sm:text-3xl font-medium leading-none tracking-[-0.02em]">
+                    <CountUp value={s.num} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        </div>
+
+        {/* Slide timers double as the slide picker */}
+        {slides.length > 1 && (
+          <div className="mt-8 flex gap-1.5" role="group" aria-label="Фото">
+            {slides.map((_, i) => (
+              <button key={i} onClick={() => setCurrent(i)} aria-label={`Фото ${i + 1}`} aria-current={i === index} className="group flex-1 py-2">
+                <span className="relative block h-0.5 overflow-hidden bg-white/25 group-hover:bg-white/50 transition-colors">
+                  {i === index && (
+                    <motion.span
+                      key={current}
+                      className="absolute inset-0 origin-left bg-brand-light"
+                      initial={{ scaleX: reduced ? 1 : 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ duration: SLIDE_MS / 1000, ease: 'linear' }}
+                    />
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </section>
+  )
+}
+
+Hero.propTypes = {
+  slides: PropTypes.array.isRequired,
+}
+
+/* ─── Stacking service cards ─── */
+const CARD_THEMES = [
+  { card: 'bg-paper text-ink', muted: 'text-steel', rule: 'border-flue/70', link: 'btn-primary' },
+  { card: 'bg-forge-black text-forge-cream', muted: 'text-forge-dim', rule: 'border-white/15', link: 'btn-primary' },
+  { card: 'bg-[#3B2318] text-forge-cream', muted: 'text-[#D9C8BC]', rule: 'border-white/15', link: 'btn-primary' },
+]
+
+function ServiceCard({ service, index, total, progress }) {
+  const theme = CARD_THEMES[index % CARD_THEMES.length]
+  const scale = useTransform(progress, [index / total, 1], [1, 1 - (total - 1 - index) * 0.04])
+  return (
+    <div className="lg:sticky lg:h-[calc(100vh-6rem)] lg:min-h-[600px] lg:max-h-[780px]" style={{ top: `${5 + index * 1.25}rem` }}>
+      <motion.article
+        style={{ scale }}
+        className={`${theme.card} grid h-full origin-top overflow-hidden rounded-3xl shadow-[0_-20px_60px_-30px_rgba(32,37,42,.45)] lg:grid-cols-2`}
+      >
+        <ParallaxImage src={service.img} alt={service.title} distance={7} className="aspect-[4/3] lg:aspect-auto" />
+        <div className="flex flex-col p-7 sm:p-10 lg:p-12">
+          <h3 className="heading-xl">{service.title}</h3>
+          <p className={`mt-5 leading-relaxed ${theme.muted}`}>{service.detail}</p>
+          <ul className={`mt-6 border-t ${theme.rule}`}>
+            {service.fullPoints.map((p, i) => (
+              <motion.li
+                key={p}
+                className={`border-b ${theme.rule} py-2.5 text-[15px] leading-snug font-normal`}
+                initial={{ opacity: 0, x: -16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 + i * 0.07, ease: EASE }}
+              >
+                {p}
+              </motion.li>
+            ))}
+          </ul>
+          <p className={`mt-5 text-sm leading-relaxed ${theme.muted}`}>{service.priceNote}</p>
+          <div className="mt-auto pt-6">
+            <Link to={service.link || '/contacts#consultation'} className={theme.link}>
+              {service.link ? 'Детальніше про монтаж саун' : 'Замовити монтаж'}
+            </Link>
+          </div>
+        </div>
+      </motion.article>
+    </div>
+  )
+}
+
+ServiceCard.propTypes = {
+  service: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
+  total: PropTypes.number.isRequired,
+  progress: PropTypes.object.isRequired,
+}
+
+function Services() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  return (
+    <section className="page-section pb-10 lg:pb-16">
+      <div className="page-wrap">
+        <div className="max-w-4xl mb-14 lg:mb-20">
+          <WordsReveal text="Що ми монтуємо" className="heading-display" />
+          <Reveal delay={0.15}>
+            <p className="mt-7 max-w-2xl text-lg leading-relaxed text-steel">
+              Понад 10 років встановлюємо печі, каміни та обладнання для саун і лазень. Ми не просто продаємо обладнання, а несемо повну відповідальність за якість монтажу та надаємо гарантію на виконані роботи.
+            </p>
+          </Reveal>
+        </div>
+        <div ref={ref} className="space-y-6 lg:space-y-10">
+          {SERVICES.map((s, i) => (
+            <ServiceCard key={s.id} service={s} index={i} total={SERVICES.length} progress={scrollYProgress} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─── Process timeline: the line fills like heat climbing a flue ─── */
+function ProcessStep({ step }) {
+  const ref = useRef(null)
+  const lit = useInView(ref, { margin: '0px 0px -45% 0px' })
+  const [reached, setReached] = useState(false)
+  useEffect(() => { if (lit) setReached(true) }, [lit])
+  return (
+    <li ref={ref} className="relative pl-16 sm:pl-20 pb-12 last:pb-0">
+      <motion.span
+        animate={{
+          backgroundColor: reached ? '#C94A10' : '#F9F9F7',
+          color: reached ? '#FFFFFF' : '#565F67',
+        }}
+        transition={{ duration: 0.35 }}
+        className="absolute left-0 top-0 flex h-11 w-11 items-center justify-center rounded-full font-display text-base font-medium"
+      >
+        {step.id}
+      </motion.span>
+      <motion.div animate={{ opacity: reached ? 1 : 0.4 }} transition={{ duration: 0.4 }}>
+        <h3 className="font-display text-2xl sm:text-3xl font-medium tracking-[-0.02em]">{step.title}</h3>
+        <p className="mt-2 max-w-xl text-lg leading-relaxed text-steel">{step.text}</p>
+      </motion.div>
+    </li>
+  )
+}
+
+ProcessStep.propTypes = {
+  step: PropTypes.object.isRequired,
+}
+
+function Process() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 55%', 'end 55%'] })
+  return (
+    <section className="page-section">
+      <div className="page-wrap grid gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <div className="lg:sticky lg:top-28">
+            <WordsReveal text="Як ми працюємо" className="heading-display" />
+            <Reveal delay={0.2}>
+              <p className="mt-6 max-w-sm text-lg leading-relaxed text-steel">
+                Монтаж не потрібен? Можемо підібрати обладнання або прорахувати димохід окремо.
+              </p>
+            </Reveal>
+          </div>
+        </div>
+        <div className="lg:col-span-7">
+          <ol ref={ref} className="relative">
+            <span aria-hidden="true" className="absolute left-[21px] top-2 bottom-2 w-0.5 bg-flue/70" />
+            <motion.span
+              aria-hidden="true"
+              style={{ scaleY: scrollYProgress }}
+              className="absolute left-[21px] top-2 bottom-2 w-0.5 origin-top bg-gradient-to-b from-brand-primary to-brand-light"
+            />
+            {PROCESS_STEPS.map(step => <ProcessStep key={step.id} step={step} />)}
+          </ol>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─── Scrollable strip of finished work ─── */
+function WorkStrip({ images }) {
+  const track = useRef(null)
+  const [atStart, setAtStart] = useState(true)
+  const [atEnd, setAtEnd] = useState(false)
+
+  const updateEnds = () => {
+    const el = track.current
+    if (!el) return
+    setAtStart(el.scrollLeft <= 4)
+    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4)
+  }
+
+  useEffect(() => {
+    updateEnds()
+    window.addEventListener('resize', updateEnds)
+    return () => window.removeEventListener('resize', updateEnds)
+  }, [images.length])
+
+  // One photo per click: card width plus the gap
+  const scrollStrip = (dir) => {
+    const el = track.current
+    if (!el) return
+    const card = el.firstElementChild
+    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8
+    el.scrollBy({ left: dir * step, behavior: 'smooth' })
+  }
+
+  return (
+    <section className="pb-20 lg:pb-28">
+      <div className="page-wrap flex flex-wrap items-end justify-between gap-4 mb-10">
+        <div>
+          <WordsReveal text="Наші роботи" className="heading-display" />
+          <p className="mt-3 text-steel">Гортайте стрічку або скористайтеся стрілками.</p>
+        </div>
+        <div className="flex items-center gap-5">
+          <Link to="/gallery" className="text-link">Дивитись усі роботи</Link>
+          {images.length > 1 && (
+            <div className="flex gap-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => scrollStrip(-1)}
+                disabled={atStart}
+                className="btn-on-light !p-0 w-12 h-12 disabled:opacity-35 disabled:cursor-default"
+                aria-label="Попередні роботи"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => scrollStrip(1)}
+                disabled={atEnd}
+                className="btn-on-light !p-0 w-12 h-12 disabled:opacity-35 disabled:cursor-default"
+                aria-label="Наступні роботи"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </motion.button>
+            </div>
+          )}
+        </div>
+      </div>
+      <motion.div
+        ref={track}
+        onScroll={updateEnds}
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.9, ease: EASE }}
+        className="flex gap-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth pb-2 [&::-webkit-scrollbar]:hidden px-4 sm:px-6 lg:px-[max(2rem,calc((100vw-80rem)/2+2rem))] scroll-px-4 sm:scroll-px-6 lg:scroll-px-[max(2rem,calc((100vw-80rem)/2+2rem))]"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {images.map(img => (
+          <Link
+            key={img.id}
+            to="/gallery"
+            className="group block aspect-[4/3] w-[75vw] max-w-[520px] flex-shrink-0 snap-start overflow-hidden rounded-2xl bg-flue/30"
+          >
+            <motion.img
+              src={img.url}
+              alt={img.title || ''}
+              loading="lazy"
+              whileHover={{ scale: 1.06 }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="h-full w-full object-cover"
+            />
+          </Link>
+        ))}
+      </motion.div>
+    </section>
+  )
+}
+
+WorkStrip.propTypes = {
+  images: PropTypes.array.isRequired,
+}
+
+/* ─── Catalog panels that widen under the pointer ─── */
+function CatalogPanels({ countFor }) {
+  const [hovered, setHovered] = useState(0)
+  return (
+    <div className="flex flex-col gap-3 lg:h-[560px] lg:flex-row" onPointerLeave={() => setHovered(0)}>
+      {CATALOG_CATS.map((c, i) => {
+        const count = countFor(c.categoryId)
+        const on = hovered === i
+        return (
+          <motion.div
+            key={c.categoryId}
+            className="min-w-0 lg:basis-0"
+            initial={false}
+            animate={{ flexGrow: on ? 2.3 : 1 }}
+            transition={{ type: 'spring', stiffness: 170, damping: 26 }}
+            onPointerEnter={() => setHovered(i)}
+          >
+            <Link
+              to={`/catalog?category=${c.categoryId}`}
+              onFocus={() => setHovered(i)}
+              className="group relative block h-64 overflow-hidden rounded-3xl bg-forge-black text-forge-cream sm:h-80 lg:h-full"
+            >
+              <motion.img
+                src={c.img}
+                alt=""
+                loading="lazy"
+                animate={{ scale: on ? 1.05 : 1.14 }}
+                transition={{ duration: 1, ease: EASE }}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-forge-black/90 via-forge-black/15 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 sm:p-8">
+                <div className="min-w-0">
+                  <h3 className="font-display text-2xl sm:text-3xl font-medium tracking-[-0.02em]">{c.label}</h3>
+                  {count > 0 && <p className="mt-1 text-[15px] text-forge-dim">{modelsLabel(count)}</p>}
+                </div>
+                <motion.span
+                  aria-hidden="true"
+                  animate={{ rotate: on ? 0 : -45, backgroundColor: on ? '#FF7A1A' : 'rgba(255,255,255,.16)' }}
+                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </motion.span>
+              </div>
+            </Link>
+          </motion.div>
+        )
+      })}
+    </div>
+  )
+}
+
+CatalogPanels.propTypes = {
+  countFor: PropTypes.func.isRequired,
+}
+
 /* ─── Component ─── */
 export default function Home() {
-  const rootRef = useRef(null)
   const reviewsScrollRef = useRef(null)
   const scrollReviews = (dir) => {
     const el = reviewsScrollRef.current
@@ -206,17 +569,12 @@ export default function Home() {
     queryKey: ['gallery'],
     queryFn: fetchGallery,
   })
-  const carouselImages = galleryImages.slice(0, 10)
-  const [carouselIdx, setCarouselIdx] = useState(0)
-  const carouselMax = Math.max(0, carouselImages.length - 3)
-  const prevSlide = () => setCarouselIdx(i => Math.max(0, i - 1))
-  const nextSlide = () => setCarouselIdx(i => Math.min(carouselMax, i + 1))
+  const featuredImages = galleryImages.slice(0, 10)
 
-  useEffect(() => {
-    if (carouselImages.length <= 3) return
-    const t = setInterval(() => setCarouselIdx(i => (i >= carouselMax ? 0 : i + 1)), 3500)
-    return () => clearInterval(t)
-  }, [carouselImages.length, carouselMax])
+  const { data: manufacturers = [] } = useQuery({
+    queryKey: ['manufacturers'],
+    queryFn: fetchManufacturers,
+  })
 
   const countByCategory = (id) => allProducts.filter(p => p.category_id === id).length
 
@@ -225,6 +583,11 @@ export default function Home() {
     queryFn: fetchReviews,
   })
 
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null
+
+  const [reviewFormOpen, setReviewFormOpen] = useState(false)
   const [activeReview, setActiveReview] = useState(null) // review object whose full comment is shown
   const [activeImage, setActiveImage] = useState(null)   // image url shown fullscreen
 
@@ -286,47 +649,8 @@ export default function Home() {
     reviewMutation.mutate()
   }
 
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      /* Set initial states before first paint — prevents flash */
-      gsap.set('.hero-line',  { yPercent: 110 })
-      gsap.set('.hero-body',  { y: 28, opacity: 0 })
-      gsap.set('.hero-stat',  { y: 16, opacity: 0 })
-      gsap.set('.hero-img',   { x: 60, opacity: 0 })
-      gsap.set('.service-card', { opacity: 0, y: 80, scale: 0.96 })
-      gsap.set('.cat-tile',   { y: 44, opacity: 0 })
-
-      /* Hero staggered line reveal */
-      gsap.to('.hero-line', { yPercent: 0, duration: 0.85, stagger: 0.09, ease: 'power3.out' })
-      gsap.to('.hero-body', { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', delay: 0.25 })
-      gsap.to('.hero-stat', { y: 0, opacity: 1, stagger: 0.06, duration: 0.55, ease: 'power2.out', delay: 0.4 })
-      gsap.to('.hero-img',  { x: 0, opacity: 1, duration: 0.9, ease: 'power2.out', delay: 0.1 })
-
-      /* Services scroll reveal */
-      gsap.to('.service-card',
-        { y: 0, opacity: 1, scale: 1, stagger: 0.1, duration: 0.65, ease: 'power2.out',
-          scrollTrigger: { trigger: '.services-section', start: 'top 85%', once: true } }
-      )
-
-      /* Catalog preview */
-      gsap.to('.cat-tile',
-        { y: 0, opacity: 1, stagger: 0.08, duration: 0.55, ease: 'power2.out',
-          scrollTrigger: { trigger: '.catalog-preview', start: 'top 85%', once: true } }
-      )
-
-      /* Stats */
-      gsap.fromTo('.stat-block',
-        { y: 28, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.07, duration: 0.5, ease: 'power2.out',
-          scrollTrigger: { trigger: '.stats-section', start: 'top 85%', once: true } }
-      )
-    }, rootRef)
-
-    return () => ctx.revert()
-  }, [])
-
   return (
-    <div ref={rootRef} className="bg-forge-black text-forge-cream">
+    <div className="bg-plaster text-ink">
       <Helmet>
         <title>Буржуйка — Продаж та монтаж печей і камінів | Київ</title>
         <meta name="description" content="Продаж та монтаж печей для сауни, опалювальних печей та камінів. Виробник Новаслав та інші бренди. Установка під ключ — Київ та область." />
@@ -339,689 +663,287 @@ export default function Home() {
 
       <Navbar />
 
-      {/* ═══════════ HERO ═══════════ */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Background image + overlays */}
-        <div className="absolute inset-0">
-          <img
-            src="/fire-flame.webp"
-            alt=""
-            className="w-full h-full object-cover"
+      <Hero slides={heroSlides} />
+
+      {/* Manufacturers ticker */}
+      {/* {manufacturers.length > 0 && (
+        <section aria-label="Виробники в нашому каталозі" className="bg-forge-black py-6 text-forge-cream border-t border-white/10">
+          <Marquee
+            items={manufacturers.map(m => <span key={m.id} className="font-display text-2xl sm:text-3xl font-normal tracking-[-0.01em]">{m.label}</span>)}
           />
-          {/* Dark vignette */}
-          <div className="absolute inset-0 bg-forge-black/40" />
-          {/* Directional fade — left side more visible */}
-          <div className="absolute inset-0 bg-gradient-to-r from-forge-black via-forge-black/60 to-forge-black/20" />
-          {/* Bottom fade */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-forge-black to-transparent" />
-        </div>
-
-        {/* Orange ambient glow */}
-        <div className="absolute top-1/3 right-1/3 w-[500px] h-[500px] bg-brand-primary/8 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-            {/* LEFT — content */}
-            <div>
-              {/* Label line */}
-              <div className="flex items-center gap-3 mb-8">
-                <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-                <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                  Монтаж та продаж — Буржуйка
-                </span>
-              </div>
-
-              {/* Display heading — each line wrapped for clip reveal */}
-              <h1 className="font-display font-bold uppercase leading-none mb-8 text-5xl sm:text-6xl lg:text-[80px]">
-                <div className="clip-reveal overflow-hidden">
-                  <span className="hero-line block text-forge-cream">ПРОДАЄМО</span>
-                </div>
-                <div className="clip-reveal overflow-hidden">
-                  <span className="hero-line block text-brand-primary">МОНТУЄМО</span>
-                </div>
-                <div className="clip-reveal overflow-hidden">
-                  <span className="hero-line block text-forge-cream">ГАРАНТУЄМО</span>
-                </div>
-              </h1>
-
-              {/* Subtitle */}
-              <p className="hero-body text-forge-dim text-base sm:text-lg leading-relaxed max-w-md mb-8">
-                Монтаж та продаж печей, камінів і обладнання для бань та лазні. Установка під ключ Київ та область.
-              </p>
-
-              {/* Stats strip */}
-              <div className="flex items-stretch gap-0 border-t border-forge-border pt-8">
-                {STATS.slice(0, 3).map((s, i) => (
-                  <div
-                    key={s.label}
-                    className={`hero-stat flex-1 ${i > 0 ? 'border-l border-forge-border pl-6' : ''} ${i < 2 ? 'pr-6' : ''}`}
-                  >
-                    <div className="font-display text-3xl font-bold text-brand-primary leading-none mb-1">{s.num}</div>
-                    <div className="text-forge-cream text-xs leading-snug">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* RIGHT — hero carousel (desktop only) */}
-            <div className="hidden lg:block hero-img">
-              <HeroCarousel images={heroSlides} />
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom divider */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-forge-border" />
-      </section>
-
-      {/* ═══════════ SERVICES ═══════════ */}
-      <section className="services-section py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* Section header */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-16">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-                <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Наші послуги</span>
-              </div>
-              <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-4">
-                Що ми монтуємо
-              </h2>
-              <p className="text-brand-primary font-sans font-semibold text-sm uppercase tracking-wide mb-3">
-                Монтаж під ключ — Київ та область
-              </p>
-              <p className="text-forge-muted text-base leading-relaxed">
-                Буржуйка — це досвідчені фахівці, в яких понад 10 років досвіду встановлення печей, камінів та обладнання для саун і лазень. Більше 500 реалізованих проектів у Києві та області. Ми не просто продаємо обладнання — ми несемо повну відповідальність за якість монтажу та надаємо гарантію на виконані роботи.
-              </p>
-            </div>
-            <Link
-              to="/contacts"
-              className="hidden sm:inline-flex items-center gap-2 text-forge-muted hover:text-brand-primary text-sm font-medium uppercase tracking-wide transition-colors flex-shrink-0"
-            >
-              Замовити послугу <span className="text-lg leading-none">→</span>
-            </Link>
-          </div>
-
-          {/* Single unified grid: photo cards row + service list rows */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px">
-            {/* Photo cards */}
-            {SERVICES.map(s => (
-              <div
-                key={s.id}
-                className="service-card group relative bg-forge-card hover:border-brand-primary/50 overflow-hidden transition-all duration-500"
-              >
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={s.img}
-                    alt={s.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-forge-card via-forge-card/40 to-transparent" />
-                  <span className="absolute top-4 right-5 font-display text-6xl font-bold text-white/8 leading-none select-none">
-                    {s.id}
-                  </span>
-                </div>
-                <div className="h-0.5 bg-brand-primary w-0 group-hover:w-full transition-all duration-500 ease-out" />
-                <div className="p-6">
-                  <h3 className="font-display text-xl font-bold uppercase text-forge-cream mb-2 group-hover:text-brand-primary transition-colors duration-300">
-                    {s.title}
-                  </h3>
-                  <p className="text-forge-muted text-sm leading-relaxed mb-4">{s.desc}</p>
-                  <ul className="space-y-1.5 mb-5">
-                    {s.points.map(p => (
-                      <li key={p} className="flex items-center gap-2 text-forge-dim text-sm">
-                        <span className="w-1 h-1 rounded-full bg-brand-primary flex-shrink-0" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    to={s.link || '/contacts'}
-                    className="inline-flex items-center gap-2 text-brand-primary font-sans font-semibold text-sm uppercase tracking-wide hover:gap-3 transition-all"
-                  >
-                    Замовити <span>→</span>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Detailed breakdown */}
-          <div className="mt-20 pt-16 border-t border-forge-border">
-            <h3 className="font-display text-2xl sm:text-3xl font-bold uppercase text-forge-cream mb-12">
-              Що входить в роботу монтажу
-            </h3>
-            <div className="space-y-12">
-              {SERVICES.map(s => (
-                <div key={s.id} className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-10">
-                  <span className="font-display text-5xl font-bold text-brand-primary leading-none flex-shrink-0">
-                    {s.id}
-                  </span>
-                  <div>
-                    <h4 className="font-display text-xl font-bold uppercase text-forge-cream mb-3">{s.title}</h4>
-                    <p className="text-forge-muted text-sm leading-relaxed mb-4 max-w-2xl">{s.detail}</p>
-                    <p className="text-forge-dim text-xs uppercase tracking-widest mb-2">Що включено:</p>
-                    <ul className="space-y-1.5 mb-4">
-                      {s.fullPoints.map(p => (
-                        <li key={p} className="flex items-center gap-2 text-forge-dim text-sm">
-                          <span className="w-1 h-1 rounded-full bg-brand-primary flex-shrink-0" />
-                          {p}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="text-forge-muted text-xs italic leading-relaxed max-w-2xl">{s.priceNote}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ WHY TRUST US ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Довіра</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-12">
-            Чому нам довіряють
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {TRUST_POINTS.map(t => (
-              <div key={t.title} className="bg-forge-black border border-forge-border p-6">
-                <h3 className="font-display text-base font-bold uppercase text-brand-primary mb-3 leading-snug">{t.title}</h3>
-                <p className="text-forge-muted text-sm leading-relaxed">{t.text}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-forge-dim text-sm leading-relaxed max-w-3xl">
-            Перед початком робіт ми обов&apos;язково виїжджаємо на об&apos;єкт, робимо заміри та надаємо кошторис.
-          </p>
-        </div>
-      </section>
-
-      {/* ═══════════ HOW WE WORK ═══════════ */}
-      <section className="py-24 bg-forge-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Процес</span>
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none mb-12">
-            Як ми працюємо
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-forge-border mb-14">
-            {PROCESS_STEPS.map(step => (
-              <div key={step.id} className="bg-forge-card p-6">
-                <span className="font-display text-3xl font-bold text-brand-primary/30 leading-none block mb-3">{step.id}</span>
-                <h3 className="font-display text-lg font-bold uppercase text-forge-cream mb-2">{step.title}</h3>
-                <p className="text-forge-muted text-sm leading-relaxed">{step.text}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Mini CTA */}
-          <div className="border border-brand-primary/30 bg-forge-card p-8 sm:p-10 text-center">
-            <h3 className="font-display text-xl sm:text-2xl font-bold uppercase text-forge-cream mb-2">
-              Залишились питання?
-            </h3>
-            <p className="text-forge-muted text-sm mb-6">
-              Зателефонуйте нам або напишіть у Telegram / Viber — відповімо швидко та проконсультуємо щодо вашого проекту.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-6 sm:gap-12">
-              <div>
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-1">Монтаж</p>
-                <a href="tel:+380935428302" className="font-display text-xl font-bold text-forge-cream hover:text-brand-primary transition-colors">
-                  +38 093 542 83 02
-                </a>
-              </div>
-              <div>
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-1">Продаж</p>
-                <a href="tel:+380688429412" className="font-display text-xl font-bold text-forge-cream hover:text-brand-primary transition-colors">
-                  +38 068 842 94 12
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ OUR WORK ═══════════ */}
-      {carouselImages.length > 0 && (
-        <section className="gallery-preview-section py-24 bg-forge-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-                  <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Портфоліо</span>
-                </div>
-                <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none">
-                  Наші роботи
-                </h2>
-                <p className="text-forge-muted mt-3 text-sm">Переглянте приклади наших установок</p>
-              </div>
-              <div className="flex items-center gap-4">
-                {/* Arrows */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={prevSlide}
-                    disabled={carouselIdx === 0}
-                    className="w-10 h-10 border border-forge-border flex items-center justify-center text-forge-dim hover:border-brand-primary hover:text-brand-primary transition-all disabled:opacity-30 disabled:cursor-default"
-                    aria-label="Назад"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={nextSlide}
-                    disabled={carouselIdx >= carouselMax}
-                    className="w-10 h-10 border border-forge-border flex items-center justify-center text-forge-dim hover:border-brand-primary hover:text-brand-primary transition-all disabled:opacity-30 disabled:cursor-default"
-                    aria-label="Вперед"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-                <Link
-                  to="/gallery"
-                  className="hidden sm:inline-flex items-center gap-2 text-forge-muted hover:text-brand-primary text-sm font-medium uppercase tracking-wide transition-colors"
-                >
-                  Дивитись усі <span className="text-lg leading-none">→</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Carousel track */}
-            <div className="overflow-hidden">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${carouselIdx * (100 / 3)}%)` }}
-              >
-                {carouselImages.map((img) => (
-                  <div key={img.id} className="w-1/3 flex-shrink-0 px-1.5">
-                    <Link to="/gallery" className="group block aspect-square overflow-hidden bg-forge-surface">
-                      <img
-                        src={img.url}
-                        alt={img.title || ''}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Dots */}
-            {carouselImages.length > 3 && (
-              <div className="flex justify-center gap-1.5 mt-6">
-                {Array.from({ length: carouselMax + 1 }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCarouselIdx(i)}
-                    className={`h-1 rounded-full transition-all duration-300 ${
-                      i === carouselIdx ? 'bg-brand-primary w-6' : 'w-3 bg-forge-border hover:bg-forge-dim'
-                    }`}
-                    aria-label={`Слайд ${i + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-
-            <div className="text-center mt-8 sm:hidden">
-              <Link
-                to="/gallery"
-                className="inline-block border border-brand-primary text-brand-primary font-semibold px-8 py-3 text-sm uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all"
-              >
-                Дивитись усі роботи
-              </Link>
-            </div>
-          </div>
         </section>
-      )}
+      )} */}
 
-      {/* ═══════════ CATALOG PREVIEW ═══════════ */}
-      <section className="catalog-preview py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Асортимент</span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
-            <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream leading-none">
-              Каталог товарів
-            </h2>
-            <Link
-              to="/catalog"
-              className="hidden sm:inline-flex items-center gap-2 text-forge-muted hover:text-brand-primary text-sm font-medium uppercase tracking-wide transition-colors"
-            >
-              Переглянути всі <span className="text-lg leading-none">→</span>
-            </Link>
-          </div>
+      <Services />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {CATALOG_CATS.map((c, i) => (
-              <Link
-                to="/catalog"
-                key={c.label}
-                className="cat-tile group bg-forge-card border border-forge-border hover:border-brand-primary/60 p-8 transition-all duration-300 relative overflow-hidden"
-              >
-                {/* Background number */}
-                <span className="absolute -right-2 -bottom-4 font-display text-[90px] font-bold text-white/5 leading-none select-none">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className="text-4xl mb-6">{c.icon}</div>
-                <h3 className="font-display text-2xl font-bold uppercase text-forge-cream mb-2 group-hover:text-brand-primary transition-colors">
-                  {c.label}
-                </h3>
-                {/* <p className="text-forge-muted text-sm mb-5 leading-relaxed">{c.desc}</p> */}
-                <div className="flex items-center justify-between">
-                  <span className="text-brand-primary text-xs font-semibold uppercase tracking-widest">{countByCategory(c.categoryId)} моделей</span>
-                  <span className="text-forge-muted group-hover:text-brand-primary group-hover:translate-x-1 transition-all inline-block">→</span>
-                </div>
-              </Link>
+      <FlueDiagram
+        title="Безпека залежить від кожного вузла"
+        lead="Помилка на одному етапі може призвести до пожежі або неефективної роботи всієї системи. Тому ми відповідаємо за весь шлях, від топки до оголовка труби."
+      />
+
+      <Process />
+
+      {/* ═══════════ TRUST ═══════════ */}
+      <section className="bg-forge-black text-forge-cream page-section">
+        <div className="page-wrap">
+          <WordsReveal text="Чому нам довіряють" className="heading-display mb-12" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {TRUST_POINTS.map((t, i) => (
+              <Reveal key={t.title} delay={i * 0.08} className="h-full">
+                <SpotlightCard className="h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-brand-light/50">
+                  <h3 className="font-display text-xl font-medium leading-snug tracking-[-0.01em]">{t.title}</h3>
+                  <p className="mt-4 leading-relaxed text-forge-dim">{t.text}</p>
+                </SpotlightCard>
+              </Reveal>
             ))}
-          </div>
-
-          <div className="text-center mt-8 sm:hidden">
-            <Link
-              to="/catalog"
-              className="inline-block border border-brand-primary text-brand-primary font-semibold px-8 py-3 text-sm uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all"
-            >
-              Весь каталог
-            </Link>
           </div>
         </div>
       </section>
+
+      {/* ═══════════ CATALOG ═══════════ */}
+      <section className="page-section">
+        <div className="page-wrap">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+            <WordsReveal text="Каталог обладнання" className="heading-display" />
+            <Link to="/catalog" className="text-link">Переглянути весь каталог</Link>
+          </div>
+          <Reveal>
+            <CatalogPanels countFor={countByCategory} />
+          </Reveal>
+        </div>
+      </section>
+
+      {featuredImages.length > 0 && <WorkStrip images={featuredImages} />}
 
       {/* ═══════════ REVIEWS ═══════════ */}
-      <section className="py-24 bg-forge-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="h-px w-10 bg-brand-primary" />
-              <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Відгуки</span>
-              <div className="h-px w-10 bg-brand-primary" />
-            </div>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold uppercase text-forge-cream text-balance">
-              Що кажуть клієнти
-            </h2>
-          </div>
-
-          {reviews.length > 0 ? (
-            <div className="relative mb-16">
-              <div
-                ref={reviewsScrollRef}
-                className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 [&::-webkit-scrollbar]:hidden"
-                style={{ scrollbarWidth: 'none' }}
-              >
-                {reviews.map(r => {
-                  const isLong = r.comment.length > REVIEW_COMMENT_LIMIT
-                  const preview = isLong ? `${r.comment.slice(0, REVIEW_COMMENT_LIMIT).trimEnd()}…` : r.comment
-                  return (
-                    <div
-                      key={r.id}
-                      className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] lg:w-[31%] bg-forge-black border border-forge-border p-6"
-                    >
-                      {r.image_url && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveImage(r.image_url)}
-                          className="block w-full mb-4 cursor-zoom-in"
-                          aria-label="Переглянути фото"
-                        >
-                          <img
-                            src={r.image_url}
-                            alt=""
-                            loading="lazy"
-                            className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
-                          />
-                        </button>
-                      )}
-                      <StarRating value={r.rating} size="w-4 h-4" />
-                      <p className="text-forge-dim text-sm leading-relaxed mt-4 mb-2 whitespace-pre-wrap">{preview}</p>
-                      {isLong && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveReview(r)}
-                          className="text-brand-primary text-xs font-semibold uppercase tracking-wide hover:underline mb-2"
-                        >
-                          Показати більше
-                        </button>
-                      )}
-                      <p className="text-forge-cream text-sm font-semibold mt-2">{r.name}</p>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Arrows */}
-              {reviews.length > 1 && (
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    onClick={() => scrollReviews(-1)}
-                    className="w-10 h-10 border border-forge-border flex items-center justify-center text-forge-dim hover:border-brand-primary hover:text-brand-primary transition-all"
-                    aria-label="Назад"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => scrollReviews(1)}
-                    className="w-10 h-10 border border-forge-border flex items-center justify-center text-forge-dim hover:border-brand-primary hover:text-brand-primary transition-all"
-                    aria-label="Вперед"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+      <section className="bg-paper page-section">
+        <div className="page-wrap">
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
+            <div>
+              <WordsReveal text="Що кажуть клієнти" className="heading-display" />
+              {averageRating && (
+                <div className="mt-4 flex items-center gap-3 text-lg text-steel">
+                  <StarRating value={Math.round(Number(averageRating))} size="w-5 h-5" />
+                  {averageRating.replace('.', ',')} із 5
                 </div>
               )}
             </div>
+            {reviews.length > 1 && (
+              <div className="flex gap-2">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => scrollReviews(-1)} className="btn-on-light !p-0 w-12 h-12" aria-label="Попередні відгуки">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </motion.button>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => scrollReviews(1)} className="btn-on-light !p-0 w-12 h-12" aria-label="Наступні відгуки">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
+          </div>
+
+          {reviews.length > 0 ? (
+            <div
+              ref={reviewsScrollRef}
+              className="flex items-start gap-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth pt-2 pb-2 mb-12 [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none' }}
+            >
+              {reviews.map((r, i) => {
+                const isLong = r.comment.length > REVIEW_COMMENT_LIMIT
+                const preview = isLong ? `${r.comment.slice(0, REVIEW_COMMENT_LIMIT).trimEnd()}…` : r.comment
+                return (
+                  <motion.figure
+                    key={r.id}
+                    initial={{ opacity: 0, y: 36, rotate: i % 2 ? 1.5 : -1.5 }}
+                    whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                    viewport={{ once: true }}
+                    whileHover={{ y: -6 }}
+                    transition={{ duration: 0.7, ease: EASE, delay: Math.min(i, 3) * 0.08 }}
+                    className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] lg:w-[31.5%] m-0 bg-plaster rounded-3xl p-7"
+                  >
+                    {r.image_url && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveImage(r.image_url)}
+                        className="block w-full mb-5 cursor-zoom-in"
+                        aria-label="Переглянути фото"
+                      >
+                        <img src={r.image_url} alt="" loading="lazy" className="w-full h-44 rounded-2xl object-cover" />
+                      </button>
+                    )}
+                    <StarRating value={r.rating} size="w-4 h-4" />
+                    <blockquote className="m-0 mt-4 text-lg leading-relaxed whitespace-pre-wrap">{preview}</blockquote>
+                    {isLong && (
+                      <button type="button" onClick={() => setActiveReview(r)} className="text-link mt-2 text-sm">
+                        Показати більше
+                      </button>
+                    )}
+                    <figcaption className="mt-5 text-[15px] font-normal">{r.name}</figcaption>
+                  </motion.figure>
+                )
+              })}
+            </div>
           ) : (
-            <p className="text-forge-muted text-center mb-16">Поки немає відгуків. Будьте першим!</p>
+            <p className="text-steel text-lg mb-10">Поки немає відгуків. Поділіться своїм першим.</p>
           )}
 
           {/* Leave a review */}
-          <form onSubmit={handleReviewSubmit} className="max-w-xl mx-auto bg-forge-black border border-forge-border p-8">
-            <h3 className="font-display text-lg font-bold uppercase text-forge-cream mb-6 text-center">Залишити відгук</h3>
+          <button
+            type="button"
+            onClick={() => setReviewFormOpen(v => !v)}
+            aria-expanded={reviewFormOpen}
+            className="btn-on-light"
+          >
+            <motion.span aria-hidden="true" animate={{ rotate: reviewFormOpen ? 45 : 0 }} className="text-xl leading-none">+</motion.span>
+            Залишити відгук
+          </button>
 
-            {reviewMutation.isSuccess ? (
-              <p className="text-brand-primary text-sm text-center">
-                Дякуємо! Відгук буде опубліковано після перевірки.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <StarRating value={reviewForm.rating} onChange={n => setReviewForm(f => ({ ...f, rating: n }))} size="w-7 h-7" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Ваше ім'я"
-                  value={reviewForm.name}
-                  onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-forge-surface border border-forge-border px-4 py-3 text-sm text-forge-cream placeholder:text-forge-muted focus:outline-none focus:border-brand-primary"
-                />
-                <textarea
-                  placeholder="Ваш відгук"
-                  rows={4}
-                  value={reviewForm.comment}
-                  onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))}
-                  className="w-full bg-forge-surface border border-forge-border px-4 py-3 text-sm text-forge-cream placeholder:text-forge-muted focus:outline-none focus:border-brand-primary resize-none"
-                />
+          <AnimatePresence initial={false}>
+            {reviewFormOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.5, ease: EASE }}
+                className="overflow-hidden"
+              >
+                <form onSubmit={handleReviewSubmit} className="max-w-2xl pt-8 pb-1 px-1">
+                  {reviewMutation.isSuccess ? (
+                    <p className="text-lg font-normal">Дякуємо! Відгук буде опубліковано після перевірки.</p>
+                  ) : (
+                    <div className="space-y-5">
+                      <div>
+                        <p className="field-label">Ваша оцінка</p>
+                        <StarRating value={reviewForm.rating} onChange={n => setReviewForm(f => ({ ...f, rating: n }))} size="w-7 h-7" />
+                      </div>
+                      <div>
+                        <label htmlFor="review-name" className="field-label">Ваше ім&apos;я</label>
+                        <input
+                          id="review-name"
+                          type="text"
+                          value={reviewForm.name}
+                          onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
+                          className="field"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="review-comment" className="field-label">Ваш відгук</label>
+                        <textarea
+                          id="review-comment"
+                          rows={4}
+                          value={reviewForm.comment}
+                          onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))}
+                          className="field resize-none"
+                        />
+                      </div>
 
-                {/* Photo attachment */}
-                {reviewImage ? (
-                  <div className="relative w-28 h-28">
-                    <img src={reviewImage.url} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setReviewImage(null)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center text-sm"
-                      aria-label="Видалити фото"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label className="inline-flex items-center gap-2 text-forge-muted hover:text-brand-primary text-xs uppercase tracking-wide cursor-pointer transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {imageMutation.isPending ? 'Завантаження...' : 'Додати фото (необов’язково)'}
-                    <input type="file" accept="image/*" onChange={handleReviewImageChange} disabled={imageMutation.isPending} className="hidden" />
-                  </label>
-                )}
+                      {reviewImage ? (
+                        <div className="relative w-28 h-28">
+                          <img src={reviewImage.url} alt="" className="w-full h-full rounded-xl object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setReviewImage(null)}
+                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-ink text-white flex items-center justify-center text-sm"
+                            aria-label="Видалити фото"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="inline-flex items-center gap-2 text-[15px] font-normal text-steel hover:text-ink cursor-pointer transition-colors focus-within:text-ink">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {imageMutation.isPending ? 'Завантаження...' : 'Додати фото (необов’язково)'}
+                          <input type="file" accept="image/*" onChange={handleReviewImageChange} disabled={imageMutation.isPending} className="sr-only" />
+                        </label>
+                      )}
 
-                {reviewError && <p className="text-red-400 text-xs">{reviewError}</p>}
+                      {reviewError && <p className="field-error">{reviewError}</p>}
 
-                <button
-                  type="submit"
-                  disabled={reviewMutation.isPending || imageMutation.isPending}
-                  className="w-full bg-brand-primary hover:bg-brand-dark disabled:opacity-60 text-white font-semibold py-3 uppercase tracking-widest text-sm transition-colors"
-                >
-                  {reviewMutation.isPending ? 'Надсилаємо...' : 'Надіслати відгук'}
-                </button>
-              </div>
+                      <div>
+                        <button type="submit" disabled={reviewMutation.isPending || imageMutation.isPending} className="btn-primary">
+                          {reviewMutation.isPending ? 'Надсилаємо...' : 'Надіслати відгук'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </motion.div>
             )}
-          </form>
+          </AnimatePresence>
         </div>
       </section>
 
-      {/* ═══════════ CONTACT STRIP ═══════════ */}
-      <section className="py-24 bg-forge-black relative overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-primary/6 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-10 bg-brand-primary" />
-            <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">Контакти</span>
-            <div className="h-px w-10 bg-brand-primary" />
-          </div>
-
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold uppercase text-forge-cream mb-4 text-balance">
-            Потрібна консультація?
-          </h2>
-          <p className="text-forge-muted text-lg mb-10">
-            Зв'яжіться зручним способом — відповімо швидко
-          </p>
-
-          {/* Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-14">
-            {/* <a
-              href="tel:+380670000000"
-              className="flex items-center gap-2.5 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all hover:orange-glow"
-            >
-              <PhoneIcon className="w-4 h-4" />
-              Передзвонити
-            </a> */}
-            <a
-              href="https://t.me/+380688429412"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 border border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <TgIcon className="w-4 h-4" />
-              Telegram
-            </a>
-            <a
-              href="viber://chat?number=%2B380688429412"
-              className="flex items-center gap-2.5 border border-[#7360F2] text-[#7360F2] hover:bg-[#7360F2] hover:text-white font-semibold px-8 py-4 text-sm uppercase tracking-[0.1em] transition-all"
-            >
-              <VbIcon className="w-4 h-4" />
-              Viber
-            </a>
-          </div>
-
-          {/* Large phone */}
-          <div className="border-t border-forge-border pt-12">
-            <p className="text-forge-muted text-xs uppercase tracking-widest mb-8">Або дзвоніть напряму</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-10 sm:gap-16">
-              <div>
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Монтаж</p>
-                <a href="tel:+380935428302" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block">
-                  +38 093 542 83 02
-                </a>
-              </div>
-              <div>
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Продаж</p>
-                <a href="tel:+380688429412" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block mb-2">
-                  +38 068 842 94 12
-                </a>
-                <a href="tel:+380951420814" className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block">
-                  +38 095 142 08 14
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ContactPanel
+        title="Потрібна консультація?"
+        lead="Зателефонуйте або напишіть у Telegram чи Viber. Проконсультуємо щодо вашого проекту."
+      />
 
       <Footer />
 
-      {/* Full review comment modal */}
-      {activeReview && (
-        <div className="fixed inset-0 z-50 bg-forge-black flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-end px-4 sm:px-6 py-4 border-b border-forge-border flex-shrink-0">
+      <AnimatePresence>
+        {activeReview && (
+          <motion.div
+            key="review"
+            className="fixed inset-0 z-[60] bg-paper flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.35, ease: EASE }}
+          >
+            <div className="flex items-center justify-end px-4 sm:px-6 py-3 border-b border-flue flex-shrink-0">
+              <button
+                onClick={() => setActiveReview(null)}
+                className="w-10 h-10 text-steel hover:text-ink text-3xl leading-none"
+                aria-label="Закрити"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="max-w-2xl mx-auto px-6 sm:px-8 py-10">
+                <StarRating value={activeReview.rating} size="w-5 h-5" />
+                <p className="text-lg leading-relaxed mt-6 whitespace-pre-wrap">{activeReview.comment}</p>
+                <p className="font-normal mt-6">{activeReview.name}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeImage && (
+          <motion.div
+            key="image"
+            className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setActiveImage(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <button
-              onClick={() => setActiveReview(null)}
-              className="text-forge-muted hover:text-forge-cream text-3xl leading-none"
+              onClick={() => setActiveImage(null)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white/70 hover:text-white text-2xl leading-none transition-colors"
               aria-label="Закрити"
             >
-              ×
+              ✕
             </button>
-          </div>
-
-          {/* Scrollable content */}
-          <div
-            className="flex-1 overflow-y-auto overscroll-contain"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            <div className="max-w-2xl mx-auto px-6 sm:px-8 py-10">
-              <StarRating value={activeReview.rating} size="w-5 h-5" />
-              <p className="text-forge-dim text-base leading-relaxed mt-6 whitespace-pre-wrap">{activeReview.comment}</p>
-              <p className="text-forge-cream text-sm font-semibold mt-6">{activeReview.name}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Fullscreen review image */}
-      {activeImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setActiveImage(null)}
-        >
-          <button
-            onClick={() => setActiveImage(null)}
-            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white/70 hover:text-white text-2xl leading-none transition-colors"
-            aria-label="Закрити"
-          >
-            ✕
-          </button>
-          <img
-            src={activeImage}
-            alt=""
-            className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
-      )}
+            <motion.img
+              src={activeImage}
+              alt=""
+              className="max-w-[90vw] max-h-[90vh] rounded-xl object-contain shadow-2xl"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              transition={{ duration: 0.35, ease: EASE }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { useEffect, lazy, Suspense } from 'react'
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query'
 import { HelmetProvider } from 'react-helmet-async'
+import { MotionConfig, motion } from 'motion/react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import Home from './pages/Home'
 
@@ -30,8 +31,33 @@ const queryClient = new QueryClient({
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [pathname])
   return null
+}
+
+// Graphite curtain that lifts off the new page on every public route change.
+function RouteCurtain() {
+  const { pathname } = useLocation()
+  if (pathname.startsWith('/admin')) return null
+  return (
+    <motion.div
+      key={pathname}
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[70] flex origin-top items-center justify-center bg-forge-black"
+      initial={{ scaleY: 1 }}
+      animate={{ scaleY: 0 }}
+      transition={{ duration: 0.75, ease: [0.76, 0, 0.24, 1], delay: 0.12 }}
+    >
+      <motion.img
+        src="/logo/logo.png"
+        alt=""
+        className="h-14 w-auto"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+      />
+    </motion.div>
+  )
 }
 
 function ProtectedRoute({ children }) {
@@ -47,7 +73,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <MotionConfig reducedMotion="user">
           <ScrollToTop />
+          <RouteCurtain />
           <Suspense fallback={<div className="min-h-screen bg-forge-black" />}>
             <Routes>
               <Route path="/"         element={<Home />} />
@@ -66,6 +94,7 @@ export default function App() {
               } />
             </Routes>
           </Suspense>
+          </MotionConfig>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

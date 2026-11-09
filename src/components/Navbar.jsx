@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from 'motion/react';
+import { PhoneIcon } from './Icons';
 
 const NAV_LINKS = [
   { to: '/', label: 'Головна' },
@@ -9,132 +11,128 @@ const NAV_LINKS = [
   { to: '/contacts', label: 'Контакти' },
 ];
 
+const EASE = [0.22, 1, 0.36, 1];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const { scrollY, scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 180, damping: 32 });
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const solid = scrolled || open;
+  useMotionValueEvent(scrollY, 'change', (y) => {
+    const prev = scrollY.getPrevious() ?? 0;
+    setScrolled(y > 40);
+    setHidden(y > 500 && y > prev);
+  });
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        solid
-          ? 'bg-forge-black/95 backdrop-blur-md border-b border-forge-border shadow-[0_4px_32px_rgba(0,0,0,0.6)]'
-          : 'bg-transparent'
+    <motion.header
+      className={`fixed top-0 left-0 right-0 z-50 text-forge-cream transition-colors duration-300 ${
+        scrolled || open ? 'bg-forge-black/90 backdrop-blur-md' : 'bg-transparent'
       }`}
+      animate={{ y: hidden && !open ? '-100%' : 0 }}
+      transition={{ duration: 0.35, ease: EASE }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4">
-          {/* ── Logo ── */}
-          <Link
-            to="/"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 group"
-          >
-            {/* Mobile logo */}
-            <img
-              src="/logo/logo2.png"
-              alt="Буржуйка"
-              className="block md:hidden h-8 w-auto object-contain"
-            />
-            {/* Desktop logo */}
-            <img
-              src="/logo/logo.png"
-              alt="Буржуйка"
-              className="hidden md:block h-10 w-auto object-contain"
-            />
-            <span className="font-display text-xl font-bold tracking-[0.12em] text-forge-cream uppercase leading-none">
-              Буржуйка
-            </span>
+      <div className="page-wrap">
+        <div className="flex items-center justify-between py-3">
+          <Link to="/" onClick={() => setOpen(false)} className="relative z-10 flex items-center gap-2.5">
+            <img src="/logo/logo.png" alt="" className="h-9 w-auto object-contain" />
+            <span className="font-display text-xl font-medium tracking-[-0.01em] leading-none">Буржуйка</span>
           </Link>
 
-          {/* ── Desktop nav ── */}
-          <nav className="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-8">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
             {NAV_LINKS.map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/'}
-                className={({ isActive }) =>
-                  `font-sans font-medium text-xs lg:text-sm uppercase tracking-[0.1em] whitespace-nowrap transition-colors duration-200 ${
-                    isActive
-                      ? 'text-brand-primary'
-                      : 'text-forge-dim hover:text-forge-cream'
-                  }`
-                }
-              >
-                {label}
+              <NavLink key={to} to={to} end={to === '/'} className="relative rounded-full px-3 lg:px-4 py-2 text-sm lg:text-[15px] font-normal whitespace-nowrap">
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-pill"
+                        className="absolute inset-0 rounded-full bg-white/10"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <span className={`relative transition-colors ${isActive ? 'text-forge-cream' : 'text-forge-dim hover:text-forge-cream'}`}>
+                      {label}
+                    </span>
+                  </>
+                )}
               </NavLink>
             ))}
-            <a
+            <motion.a
               href="tel:+380935428302"
-              aria-label="Передзвонити +38 093 542 83 02"
-              className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-3 lg:px-4 xl:px-5 py-2.5 uppercase tracking-[0.08em] whitespace-nowrap transition-all hover:orange-glow"
+              aria-label="Зателефонувати +38 093 542 83 02"
+              whileTap={{ scale: 0.97 }}
+              className="ml-2 inline-flex items-center gap-2 rounded-full bg-brand-primary hover:bg-brand-dark text-white text-sm font-medium px-4 py-2.5 whitespace-nowrap transition-colors"
             >
-              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-              </svg>
+              <PhoneIcon className="w-4 h-4 flex-shrink-0" />
               <span className="hidden xl:inline">+38 093 542 83 02</span>
-            </a>
+            </motion.a>
           </nav>
 
-          {/* ── Hamburger / Close ── */}
           <button
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden flex items-center justify-center w-10 h-10 text-forge-cream"
+            aria-expanded={open}
             aria-label={open ? 'Закрити меню' : 'Відкрити меню'}
+            className="relative z-10 md:hidden flex flex-col items-center justify-center gap-1.5 w-10 h-10"
           >
-            {open ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            )}
+            <motion.span className="block h-0.5 w-6 bg-current" animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} />
+            <motion.span className="block h-0.5 w-6 bg-current" animate={open ? { rotate: -45, y: -4 } : { rotate: 0, y: 0 }} />
           </button>
         </div>
-
-        {/* ── Mobile menu ── */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ${open ? 'max-h-80 pb-6' : 'max-h-0'}`}
-        >
-          <div className="border-t border-forge-border pt-3 flex flex-col gap-1">
-            {NAV_LINKS.map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/'}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `px-3 py-3 font-medium text-sm uppercase tracking-widest transition-colors ${
-                    isActive
-                      ? 'text-brand-primary'
-                      : 'text-forge-dim hover:text-forge-cream'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
-            <a
-              href="tel:+380935428302"
-              onClick={() => setOpen(false)}
-              className="mt-2 text-center bg-brand-primary hover:bg-brand-dark text-white font-semibold text-sm px-5 py-3 uppercase tracking-widest transition-colors"
-            >
-              Передзвонити
-            </a>
-          </div>
-        </div>
       </div>
-    </header>
+
+      {/* Reading progress */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left bg-brand-light"
+        style={{ scaleX: progress, opacity: scrolled ? 1 : 0 }}
+      />
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="md:hidden overflow-hidden bg-forge-black"
+            initial={{ height: 0 }}
+            animate={{ height: 'calc(100dvh - 61px)' }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+          >
+            <motion.div
+              className="page-wrap flex h-full flex-col pt-6 pb-8"
+              initial="hidden"
+              animate="shown"
+              exit="hidden"
+              variants={{ shown: { transition: { staggerChildren: 0.06, delayChildren: 0.12 } }, hidden: {} }}
+            >
+              {NAV_LINKS.map(({ to, label }) => (
+                <motion.div
+                  key={to}
+                  variants={{ hidden: { opacity: 0, y: 24 }, shown: { opacity: 1, y: 0 } }}
+                  transition={{ duration: 0.5, ease: EASE }}
+                >
+                  <NavLink
+                    to={to}
+                    end={to === '/'}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      `block py-2.5 font-display text-4xl font-medium tracking-[-0.02em] ${isActive ? 'text-brand-light' : 'text-forge-cream'}`
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                </motion.div>
+              ))}
+              <a href="tel:+380935428302" onClick={() => setOpen(false)} className="btn-primary mt-auto">
+                <PhoneIcon className="w-4 h-4" />
+                +38 093 542 83 02
+              </a>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }

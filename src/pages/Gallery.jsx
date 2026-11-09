@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Helmet } from 'react-helmet-async'
+import PropTypes from 'prop-types'
 import { useQuery } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'motion/react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import PageHeader from '../components/PageHeader'
+import { Reveal } from '../components/fx'
 import { fetchGallery } from '../api/gallery'
 
 function Lightbox({ images, index, onChange, onClose }) {
@@ -21,9 +25,12 @@ function Lightbox({ images, index, onChange, onClose }) {
   }, [onClose, onChange, index, hasPrev, hasNext])
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+    <motion.div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90"
       onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
     >
       {/* Close */}
       <button
@@ -48,11 +55,20 @@ function Lightbox({ images, index, onChange, onClose }) {
       )}
 
       {/* Image */}
-      <img
+      <motion.img
+        layoutId={`gallery-${image.id}`}
         src={image.url}
         alt={image.title || ''}
-        className="max-w-[80vw] max-h-[90vh] object-contain shadow-2xl"
+        className="max-w-[80vw] max-h-[90vh] rounded-xl object-contain shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.5}
+        onDragEnd={(_, info) => {
+          if (info.offset.x < -90 && hasNext) onChange(index + 1)
+          if (info.offset.x > 90 && hasPrev) onChange(index - 1)
+        }}
+        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       />
 
       {/* Next */}
@@ -69,12 +85,19 @@ function Lightbox({ images, index, onChange, onClose }) {
       )}
 
       {/* Counter */}
-      <p className="absolute bottom-4 left-0 right-0 text-center text-white/40 text-xs tracking-widest">
+      <p className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm">
         {index + 1} / {images.length}
-        {image.title && <span className="ml-3 text-white/60">{image.title}</span>}
+        {image.title && <span className="ml-3">{image.title}</span>}
       </p>
-    </div>
+    </motion.div>
   )
+}
+
+Lightbox.propTypes = {
+  images: PropTypes.array.isRequired,
+  index: PropTypes.number.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 }
 
 export default function Gallery() {
@@ -96,65 +119,63 @@ export default function Gallery() {
 
       <Navbar />
 
-      <main className="min-h-screen bg-forge-black pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Heading */}
-          <div className="mb-10">
-            <p className="text-brand-primary text-xs font-semibold uppercase tracking-[0.2em] mb-2">
-              Портфоліо
-            </p>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-forge-cream uppercase tracking-wide">
-              Наші роботи
-            </h1>
-          </div>
+      <PageHeader crumbs={[{ label: 'Галерея' }]} title="Наші роботи" />
 
-          {/* Loading skeleton */}
+      <main className="min-h-[60vh] py-10 lg:py-14">
+        <div className="page-wrap">
           {isLoading && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-forge-surface animate-pulse" />
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="aspect-[4/3] rounded-2xl bg-paper animate-pulse" />
               ))}
             </div>
           )}
 
-          {/* Empty state */}
           {!isLoading && images.length === 0 && (
-            <div className="py-24 text-center text-forge-muted">
-              Галерея поки порожня
-            </div>
+            <p className="py-16 text-lg text-steel">Галерея поки порожня. Нові роботи з&apos;являться тут незабаром.</p>
           )}
 
-          {/* Grid */}
           {!isLoading && images.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[44vw] sm:auto-rows-[30vw] lg:auto-rows-[19vw] grid-flow-dense gap-2 sm:gap-3">
               {images.map((img, i) => (
-                <button
+                <Reveal
                   key={img.id}
-                  onClick={() => setSelectedIndex(i)}
-                  className="group relative aspect-square overflow-hidden bg-forge-surface focus:outline-none"
+                  delay={(i % 4) * 0.06}
+                  className={i % 6 === 0 ? 'col-span-2 row-span-2' : i % 6 === 3 ? 'col-span-2' : ''}
                 >
-                  <img
-                    src={img.url}
-                    alt={img.title || ''}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                </button>
+                  <button
+                    onClick={() => setSelectedIndex(i)}
+                    aria-label={img.title || `Відкрити фото ${i + 1}`}
+                    className="group h-full w-full overflow-hidden rounded-2xl bg-paper cursor-zoom-in"
+                  >
+                    <span className="block h-full w-full transition-transform duration-700 ease-out group-hover:scale-105">
+                      <motion.img
+                        layoutId={`gallery-${img.id}`}
+                        src={img.url}
+                        alt={img.title || ''}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                      />
+                    </span>
+                  </button>
+                </Reveal>
               ))}
             </div>
           )}
         </div>
       </main>
 
-      {selectedIndex !== null && (
-        <Lightbox
-          images={images}
-          index={selectedIndex}
-          onChange={setSelectedIndex}
-          onClose={close}
-        />
-      )}
+      <AnimatePresence>
+        {selectedIndex !== null && (
+          <Lightbox
+            images={images}
+            index={selectedIndex}
+            onChange={setSelectedIndex}
+            onClose={close}
+          />
+        )}
+      </AnimatePresence>
 
       <Footer />
     </>

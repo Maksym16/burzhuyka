@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import gsap from 'gsap'
 import { Helmet } from 'react-helmet-async'
-import PropTypes from 'prop-types'
+import { AnimatePresence, motion } from 'motion/react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import PageHeader from '../components/PageHeader'
+import { TgIcon, VbIcon } from '../components/Icons'
+import { EASE, Reveal } from '../components/fx'
 
 const SERVICES = [
   'Монтаж димоходів',
@@ -14,26 +16,7 @@ const SERVICES = [
   'Консультація',
 ]
 
-/* ─── SVG icons ─── */
-
-function TgIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.83.941z"/>
-    </svg>
-  )
-}
-
-function VbIcon({ className }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11.4 0C5.5.2 1.6 3.8.8 9.1c-.4 3-.1 5.8 1.2 8.4.5 1 .8 2 .7 3.1-.1 1-.3 2-.5 3-.2.6 0 1.1.6.9 1.2-.4 2.4-.9 3.5-1.5.8-.4 1.6-.5 2.5-.3 2.1.5 4.2.6 6.3.2 5.1-1 8.6-4.7 8.9-9.9.2-2.9-.5-5.5-2.2-7.8C19.7 2 16.5.3 12.8.1c-.5 0-.9 0-1.4-.1z"/>
-    </svg>
-  )
-}
-
 export default function Contacts() {
-  const rootRef = useRef(null)
   const formRef = useRef(null)
   const { hash } = useLocation()
   const [form,         setForm]         = useState({ name: '', phone: '', service: '', message: '' })
@@ -41,15 +24,7 @@ export default function Contacts() {
   const [submitted,    setSubmitted]    = useState(false)
   const [sending,      setSending]      = useState(false)
   const [agreed,       setAgreed]       = useState(false)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.contact-header', { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' })
-      gsap.fromTo('.contact-left',   { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.2 })
-      gsap.fromTo('.contact-right',  { x:  40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.3 })
-    }, rootRef)
-    return () => ctx.revert()
-  }, [])
+  const [submitError,  setSubmitError]  = useState('')
 
   useEffect(() => {
     if (hash === '#consultation') {
@@ -69,6 +44,7 @@ export default function Contacts() {
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
     setErrors({})
+    setSubmitError('')
     setSending(true)
     try {
       const res = await fetch('/api/contact', {
@@ -89,14 +65,14 @@ export default function Contacts() {
       setForm({ name: '', phone: '', service: '', message: '' })
       setAgreed(false)
     } catch (err) {
-      alert(err.message || 'Помилка відправки. Спробуйте ще раз.')
+      setSubmitError(err.message || 'Не вдалося надіслати заявку. Спробуйте ще раз або зателефонуйте нам.')
     } finally {
       setSending(false)
     }
   }
 
   return (
-    <div ref={rootRef}>
+    <div>
       <Helmet>
         <title>Контакти — Буржуйка | Київ</title>
         <meta name="description" content="Зв'яжіться з нами для консультації по монтажу та продажу печей і камінів. Київ та область." />
@@ -109,269 +85,150 @@ export default function Contacts() {
 
       <Navbar />
 
-      {/* ── Dark page header ── */}
-      <section className="bg-forge-black pt-28 pb-14 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/4 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-forge-border" />
+      <PageHeader crumbs={[{ label: 'Контакти' }]} title="Контакти" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="contact-header">
-            <nav className="flex items-center gap-2 text-forge-muted text-sm mb-6">
-              <Link to="/" className="hover:text-brand-primary transition-colors">Головна</Link>
-              <span className="text-forge-border">/</span>
-              <span className="text-forge-cream">Контакти</span>
-            </nav>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-              <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                Зв&apos;яжіться з нами
-              </span>
+      <section className="py-12 lg:py-20">
+        <div className="page-wrap grid gap-14 lg:grid-cols-12">
+          <Reveal className="lg:col-span-5">
+            <h2 className="heading-xl mb-8">Зв&apos;язок з нами</h2>
+
+            <div className="space-y-6">
+              <div className="border-t border-flue pt-4">
+                <p className="text-sm text-steel mb-2">Монтаж</p>
+                <a href="tel:+380935428302" className="block font-display text-2xl sm:text-3xl font-normal tracking-[-0.01em] hover:text-brand-primary transition-colors">
+                  +38 093 542 83 02
+                </a>
+              </div>
+              <div className="border-t border-flue pt-4">
+                <p className="text-sm text-steel mb-2">Продаж</p>
+                <a href="tel:+380688429412" className="block font-display text-2xl sm:text-3xl font-normal tracking-[-0.01em] hover:text-brand-primary transition-colors mb-1">
+                  +38 068 842 94 12
+                </a>
+                <a href="tel:+380951420814" className="block font-display text-2xl sm:text-3xl font-normal tracking-[-0.01em] hover:text-brand-primary transition-colors">
+                  +38 095 142 08 14
+                </a>
+              </div>
+              <div className="border-t border-flue pt-4">
+                <p className="text-sm text-steel mb-3">Месенджери</p>
+                <div className="flex flex-wrap gap-3">
+                  <a href="https://t.me/burzhuyka_montazh" target="_blank" rel="noopener noreferrer" className="btn-on-light">
+                    <TgIcon className="w-5 h-5 text-[#229ED9]" />
+                    Написати в Telegram
+                  </a>
+                  <a href="viber://chat?number=%2B380688429412" className="btn-on-light">
+                    <VbIcon className="w-5 h-5 text-[#7360F2]" />
+                    Написати у Viber
+                  </a>
+                </div>
+              </div>
+              <div className="border-t border-flue pt-4">
+                <p className="text-sm text-steel mb-1">Де працюємо</p>
+                <p className="font-normal">Київ та область</p>
+              </div>
             </div>
-            <h1 className="font-display text-5xl sm:text-6xl font-bold uppercase text-forge-cream leading-none">
-              Контакти
-            </h1>
-          </div>
-        </div>
-      </section>
+          </Reveal>
 
-      {/* ── Main content ── */}
-      <section className="bg-gray-50 py-14 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div id="consultation" ref={formRef} className="lg:col-span-6 lg:col-start-7 bg-paper rounded-3xl shadow-[0_24px_70px_-40px_rgba(32,37,42,.5)] p-6 sm:p-10 scroll-mt-24">
+            <h2 className="heading-lg">Звернутись за консультацією</h2>
+            <p className="mt-3 mb-8 text-steel">Передзвонимо протягом 30 хвилин у робочий час.</p>
 
-            {/* LEFT — dark contact panel */}
-            <div className="contact-left bg-forge-black text-forge-cream p-8 sm:p-10 relative overflow-hidden">
-              {/* Corner accent */}
-              <div className="absolute top-0 left-0 h-0.5 w-24 bg-brand-primary" />
-              <div className="absolute top-0 left-0 w-0.5 h-24 bg-brand-primary" />
-
-              <h2 className="font-display text-3xl font-bold uppercase text-forge-cream mb-10">
-                Зв'язок з нами
-              </h2>
-
-              {/* Phone */}
-              <div className="mb-8 space-y-6">
-                <div>
-                  <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Монтаж</p>
-                  <a
-                    href="tel:+380935428302"
-                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none"
-                  >
-                    +38 093 542 83 02
-                  </a>
-                </div>
-                <div>
-                  <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-2">Продаж</p>
-                  <a
-                    href="tel:+380688429412"
-                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none mb-2"
-                  >
-                    +38 068 842 94 12
-                  </a>
-                  <a
-                    href="tel:+380951420814"
-                    className="font-display text-3xl sm:text-4xl font-bold text-forge-cream hover:text-brand-primary transition-colors block leading-none"
-                  >
-                    +38 095 142 08 14
-                  </a>
-                </div>
-              </div>
-
-              <div className="h-px bg-forge-border mb-8" />
-
-              {/* Messengers */}
-              <div className="mb-8">
-                <p className="text-forge-muted text-xs uppercase tracking-[0.2em] mb-4">Месенджери</p>
-                <div className="flex flex-col gap-3">
-                  <a
-                    href="https://t.me/burzhuyka_montazh"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center gap-4 bg-[#2AABEE] hover:bg-[#1d96d9] text-white font-semibold px-6 py-4 transition-all"
-                  >
-                    <TgIcon className="w-6 h-6 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="text-xs text-white/70 uppercase tracking-wider mb-0.5">Написати в</div>
-                      <div className="font-display text-xl font-bold uppercase tracking-wide">Telegram</div>
-                    </div>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xl">→</span>
-                  </a>
-                  <a
-                    href="viber://chat?number=%2B380688429412"
-                    className="group flex items-center gap-4 bg-[#7360F2] hover:bg-[#5e4ed4] text-white font-semibold px-6 py-4 transition-all"
-                  >
-                    <VbIcon className="w-6 h-6 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="text-xs text-white/70 uppercase tracking-wider mb-0.5">Написати в</div>
-                      <div className="font-display text-xl font-bold uppercase tracking-wide">Viber</div>
-                    </div>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xl">→</span>
-                  </a>
-                </div>
-              </div>
-
-              <div className="h-px bg-forge-border mb-8" />
-
-              {/* Address */}
-              <div className="flex items-start gap-2 text-forge-muted text-xs">
-                <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            {submitted ? (
+              <motion.div className="py-10" role="status" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}>
+                <svg className="mb-5 h-16 w-16 text-brand-primary" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <motion.circle cx="26" cy="26" r="24" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6, ease: 'easeInOut' }} />
+                  <motion.path d="M15 27l8 8 14-16" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4, delay: 0.5, ease: 'easeOut' }} />
                 </svg>
-                <span>м. Київ, Україна</span>
-              </div>
-            </div>
-
-            {/* RIGHT — consultation form */}
-            <div id="consultation" ref={formRef} className="contact-right bg-white p-8 sm:p-10 relative scroll-mt-20">
-              {/* Corner accent */}
-              <div className="absolute top-0 right-0 h-0.5 w-24 bg-brand-primary" />
-              <div className="absolute top-0 right-0 w-0.5 h-24 bg-brand-primary" />
-
-              <h2 className="font-display text-3xl font-bold uppercase text-gray-900 mb-2">
-                Звернутись<br />за консультацією
-              </h2>
-              <p className="text-gray-500 text-sm mb-8">
-                Передзвонимо протягом 30 хвилин у робочий час
-              </p>
-
-              {submitted ? (
-                <div className="flex flex-col items-center gap-5 py-16 text-center">
-                  <div className="w-16 h-16 bg-green-100 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="font-display text-2xl font-bold uppercase text-gray-900">Заявку надіслано!</h3>
-                  <p className="text-gray-500 text-sm max-w-xs">
-                    Дякуємо! Наш менеджер зв&apos;яжеться з вами найближчим часом.
-                  </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="text-brand-primary font-semibold text-sm hover:underline"
-                  >
-                    Надіслати ще одну заявку
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {/* Name */}
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-[0.12em] mb-2">
-                        Ваше ім&apos;я <span className="text-brand-primary">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={form.name}
-                        onChange={e => setForm({ ...form, name: e.target.value })}
-                        placeholder="Іван Іваненко"
-                        className={`w-full border-b-2 px-0 py-2.5 text-sm text-gray-900 bg-transparent focus:outline-none transition-colors placeholder:text-gray-300 ${
-                          errors.name
-                            ? 'border-red-400'
-                            : 'border-gray-200 focus:border-brand-primary'
-                        }`}
-                      />
-                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-[0.12em] mb-2">
-                        Телефон <span className="text-brand-primary">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={e => setForm({ ...form, phone: e.target.value })}
-                        placeholder="+38 (067) 000-00-00"
-                        className={`w-full border-b-2 px-0 py-2.5 text-sm text-gray-900 bg-transparent focus:outline-none transition-colors placeholder:text-gray-300 ${
-                          errors.phone
-                            ? 'border-red-400'
-                            : 'border-gray-200 focus:border-brand-primary'
-                        }`}
-                      />
-                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                    </div>
-                  </div>
-
-                  {/* Service */}
+                <h3 className="heading-md">Заявку надіслано</h3>
+                <p className="mt-3 max-w-sm leading-relaxed text-steel">
+                  Дякуємо! Наш менеджер зв&apos;яжеться з вами найближчим часом.
+                </p>
+                <button onClick={() => setSubmitted(false)} className="text-link mt-6">
+                  Надіслати ще одну заявку
+                </button>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-[0.12em] mb-2">
-                      Послуга
-                    </label>
-                    <select
-                      value={form.service}
-                      onChange={e => setForm({ ...form, service: e.target.value })}
-                      className="w-full border-b-2 border-gray-200 px-0 py-2.5 text-sm text-gray-900 bg-transparent focus:outline-none focus:border-brand-primary transition-colors appearance-none cursor-pointer"
-                    >
-                      <option value="">— Оберіть послугу —</option>
-                      {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-
-                  {/* Message */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-[0.12em] mb-2">
-                      Повідомлення
-                    </label>
-                    <textarea
-                      rows={5}
-                      value={form.message}
-                      onChange={e => setForm({ ...form, message: e.target.value })}
-                      placeholder="Опишіть ваш запит або питання..."
-                      className="w-full border-b-2 border-gray-200 px-0 py-2.5 text-sm text-gray-900 bg-transparent focus:outline-none focus:border-brand-primary transition-colors resize-none placeholder:text-gray-300"
+                    <label htmlFor="contact-name" className="field-label">Ваше ім&apos;я</label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={e => setForm({ ...form, name: e.target.value })}
+                      aria-invalid={!!errors.name}
+                      className={`field ${errors.name ? '!border-red-700' : ''}`}
                     />
+                    <AnimatePresence>
+                      {errors.name && <motion.p className="field-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{errors.name}</motion.p>}
+                    </AnimatePresence>
                   </div>
-
-                  <div className="pt-2 space-y-4">
-                    {/* Consent checkbox */}
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <div className="relative flex-shrink-0 mt-0.5">
-                        <input
-                          type="checkbox"
-                          checked={agreed}
-                          onChange={e => setAgreed(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-4 h-4 border-2 border-gray-300 peer-checked:border-brand-primary peer-checked:bg-brand-primary transition-all flex items-center justify-center">
-                          {agreed && (
-                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-gray-500 text-xs leading-relaxed select-none">
-                        Я прочитав{' '}
-                        <Link
-                          to="/polityka-konfidencijnosti"
-                          className="text-brand-primary underline hover:text-brand-dark transition-colors"
-                        >
-                          Політику конфіденційності
-                        </Link>
-                        {' '}та{' '}
-                        <Link
-                          to="/umovy-nadannia-posluh"
-                          className="text-brand-primary underline hover:text-brand-dark transition-colors"
-                        >
-                          Умови надання послуг
-                        </Link>
-                        {' '}і погоджуюсь з ними
-                      </span>
-                    </label>
-
-                    <button
-                      type="submit"
-                      disabled={sending || !agreed}
-                      className="w-full bg-brand-primary hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-4 uppercase tracking-widest text-sm transition-all hover:orange-glow"
-                    >
-                      {sending ? 'Надсилаємо...' : 'Надіслати заявку'}
-                    </button>
+                  <div>
+                    <label htmlFor="contact-phone" className="field-label">Телефон</label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                      placeholder="+38 067 000 00 00"
+                      aria-invalid={!!errors.phone}
+                      className={`field ${errors.phone ? '!border-red-700' : ''}`}
+                    />
+                    <AnimatePresence>
+                      {errors.phone && <motion.p className="field-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{errors.phone}</motion.p>}
+                    </AnimatePresence>
                   </div>
-                </form>
-              )}
-            </div>
+                </div>
+
+                <div>
+                  <label htmlFor="contact-service" className="field-label">Послуга (необов&apos;язково)</label>
+                  <select
+                    id="contact-service"
+                    value={form.service}
+                    onChange={e => setForm({ ...form, service: e.target.value })}
+                    className="field cursor-pointer"
+                  >
+                    <option value="">Оберіть послугу</option>
+                    {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="contact-message" className="field-label">Повідомлення (необов&apos;язково)</label>
+                  <textarea
+                    id="contact-message"
+                    rows={4}
+                    value={form.message}
+                    onChange={e => setForm({ ...form, message: e.target.value })}
+                    className="field resize-none"
+                  />
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={e => setAgreed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 flex-shrink-0 accent-brand-primary"
+                  />
+                  <span className="text-sm leading-relaxed text-steel">
+                    Я прочитав{' '}
+                    <Link to="/polityka-konfidencijnosti" className="text-link">Політику конфіденційності</Link>
+                    {' '}та{' '}
+                    <Link to="/umovy-nadannia-posluh" className="text-link">Умови надання послуг</Link>
+                    {' '}і погоджуюсь з ними
+                  </span>
+                </label>
+
+                {submitError && <p className="field-error" role="alert">{submitError}</p>}
+
+                <motion.button whileTap={agreed ? { scale: 0.98 } : undefined} type="submit" disabled={sending || !agreed} className="btn-primary w-full">
+                  {sending ? 'Надсилаємо...' : 'Надіслати заявку'}
+                </motion.button>
+              </form>
+            )}
           </div>
         </div>
       </section>
@@ -379,32 +236,4 @@ export default function Contacts() {
       <Footer />
     </div>
   )
-}
-
-function ModalSection({ title, children, last }) {
-  return (
-    <div className={last ? '' : 'pb-6 border-b border-gray-100'}>
-      <h4 className="font-display text-sm font-bold uppercase text-gray-900 tracking-wide mb-3">{title}</h4>
-      {children}
-    </div>
-  )
-}
-
-ModalSection.propTypes = {
-  title: PropTypes.node.isRequired,
-  children: PropTypes.node,
-  last: PropTypes.bool,
-}
-
-function ModalItem({ children }) {
-  return (
-    <li className="flex items-start gap-2 list-none">
-      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary flex-shrink-0 mt-1.5" />
-      <span>{children}</span>
-    </li>
-  )
-}
-
-ModalItem.propTypes = {
-  children: PropTypes.node,
 }

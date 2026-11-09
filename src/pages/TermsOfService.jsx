@@ -1,23 +1,12 @@
-import { useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import gsap from 'gsap'
 import { Helmet } from 'react-helmet-async'
+import PropTypes from 'prop-types'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import PageHeader from '../components/PageHeader'
 
 export default function TermsOfService() {
-  const rootRef = useRef(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.tos-header', { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' })
-      gsap.fromTo('.tos-content', { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.2 })
-    }, rootRef)
-    return () => ctx.revert()
-  }, [])
-
   return (
-    <div ref={rootRef}>
+    <div>
       <Helmet>
         <title>Умови надання послуг — Буржуйка</title>
         <meta name="description" content="Умови надання послуг компанії Буржуйка: монтаж печей, камінів та димоходів у Києві. Порядок замовлення, гарантія, вирішення спорів." />
@@ -30,39 +19,14 @@ export default function TermsOfService() {
 
       <Navbar />
 
-      {/* Dark header */}
-      <section className="bg-forge-black pt-28 pb-14 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/4 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-forge-border" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="tos-header">
-            <nav className="flex items-center gap-2 text-forge-muted text-sm mb-6">
-              <Link to="/" className="hover:text-brand-primary transition-colors">Головна</Link>
-              <span className="text-forge-border">/</span>
-              <span className="text-forge-cream">Умови надання послуг</span>
-            </nav>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-px w-10 bg-brand-primary flex-shrink-0" />
-              <span className="text-brand-primary font-sans font-medium text-xs uppercase tracking-[0.22em]">
-                Правова інформація
-              </span>
-            </div>
-            <h1 className="font-display text-5xl sm:text-6xl font-bold uppercase text-forge-cream leading-none">
-              Умови<br />надання послуг
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHeader crumbs={[{ label: 'Умови надання послуг' }]} title="Умови надання послуг" />
 
       {/* Content */}
-      <section className="bg-gray-50 py-14 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="tos-content bg-white p-8 sm:p-12 relative">
-            {/* Corner accent */}
-            <div className="absolute top-0 left-0 h-0.5 w-24 bg-brand-primary" />
-            <div className="absolute top-0 left-0 w-0.5 h-24 bg-brand-primary" />
+      <section className="py-12 lg:py-16">
+        <div className="page-wrap">
+          <div className="max-w-3xl">
 
-            <p className="text-gray-400 text-sm mb-10">Дата набрання чинності: 27 травня 2026 р.</p>
+            <p className="text-steel text-[15px] mb-10">Дата набрання чинності: 27 травня 2026 р.</p>
 
             {/* 1 */}
             <Section title="1. Загальні положення">
@@ -163,25 +127,25 @@ export default function TermsOfService() {
               <p>З будь-яких питань щодо послуг або цих Умов зв&apos;яжіться з нами:</p>
               <div className="mt-4 space-y-3">
                 <div>
-                  <p className="text-brand-primary text-xs uppercase tracking-[0.18em] font-medium mb-1">Монтаж</p>
-                  <a href="tel:+380935428302" className="text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                  <p className="text-steel text-sm mb-1">Монтаж</p>
+                  <a href="tel:+380935428302" className="text-ink hover:text-brand-primary transition-colors font-semibold">
                     +38 (093) 542-83-02
                   </a>
                 </div>
                 <div>
-                  <p className="text-brand-primary text-xs uppercase tracking-[0.18em] font-medium mb-1">Продаж</p>
+                  <p className="text-steel text-sm mb-1">Продаж</p>
                   <div className="space-y-1">
-                    <a href="tel:+380688429412" className="block text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                    <a href="tel:+380688429412" className="block text-ink hover:text-brand-primary transition-colors font-semibold">
                       +38 (068) 842-94-12
                     </a>
-                    <a href="tel:+380951420814" className="block text-gray-800 hover:text-brand-primary transition-colors font-semibold">
+                    <a href="tel:+380951420814" className="block text-ink hover:text-brand-primary transition-colors font-semibold">
                       +38 (095) 142-08-14
                     </a>
                   </div>
                 </div>
                 <div>
-                  <p className="text-brand-primary text-xs uppercase tracking-[0.18em] font-medium mb-1">Email</p>
-                  <a href="mailto:burzhuyka.montazh@gmail.com" className="text-gray-800 hover:text-brand-primary transition-colors font-semibold underline">
+                  <p className="text-steel text-sm mb-1">Email</p>
+                  <a href="mailto:burzhuyka.montazh@gmail.com" className="text-ink hover:text-brand-primary transition-colors font-semibold underline">
                     burzhuyka.montazh@gmail.com
                   </a>
                 </div>
@@ -209,11 +173,11 @@ export default function TermsOfService() {
 
 function Section({ title, children, last }) {
   return (
-    <div className={`${last ? '' : 'mb-10 pb-10 border-b border-gray-100'}`}>
-      <h2 className="font-display text-xl font-bold uppercase text-gray-900 mb-4 tracking-wide">
+    <div className={`${last ? '' : 'mb-10 pb-10 border-b border-flue'}`}>
+      <h2 className="heading-md mb-4">
         {title}
       </h2>
-      <div className="text-gray-600 text-sm leading-relaxed font-sans">
+      <div className="text-steel leading-relaxed">
         {children}
       </div>
     </div>
@@ -222,9 +186,19 @@ function Section({ title, children, last }) {
 
 function Item({ children }) {
   return (
-    <li className="flex items-start gap-2 text-gray-600 text-sm">
-      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary flex-shrink-0 mt-1.5" />
+    <li className="flex items-start gap-2.5 text-steel">
+      <span className="w-1 h-1 rounded-full bg-steel flex-shrink-0 mt-2.5" />
       <span>{children}</span>
     </li>
   )
+}
+
+Section.propTypes = {
+  title: PropTypes.node.isRequired,
+  children: PropTypes.node,
+  last: PropTypes.bool,
+}
+
+Item.propTypes = {
+  children: PropTypes.node,
 }
